@@ -1,0 +1,2522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>From Agents to Intelligence Fields — 4-Pillar Flagship Interactive Lab (Feng, 2026)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-void: #03060d;
+      --panel-bg: rgba(7, 12, 24, 0.82);
+      --panel-border: rgba(148, 163, 184, 0.2);
+      --cyan: #38bdf8;
+      --teal: #2dd4bf;
+      --gold: #fbbf24;
+      --rose: #fb7185;
+      --violet: #a78bfa;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-void);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text-main);
+    }
+
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      cursor: crosshair;
+    }
+
+    #label-container {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* ================= TOP HEADER BAR ================= */
+    #top-bar {
+      position: fixed;
+      top: 12px;
+      left: 16px;
+      right: 16px;
+      height: 54px;
+      z-index: 20;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(251, 191, 36, 0.14);
+      border: 1px solid rgba(251, 191, 36, 0.45);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+    }
+    .brand-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+    }
+    .brand-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .top-btn {
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid var(--panel-border);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+    }
+    .top-btn:hover {
+      border-color: var(--cyan);
+      background: rgba(56, 189, 248, 0.16);
+    }
+    .top-btn.active {
+      border-color: var(--cyan);
+      background: rgba(56, 189, 248, 0.22);
+      color: #bae6fd;
+    }
+    .top-btn.audio-btn {
+      border-color: rgba(167, 139, 250, 0.6);
+      background: rgba(167, 139, 250, 0.14);
+      color: #ddd6fe;
+    }
+    .top-btn.audio-btn.playing {
+      border-color: var(--teal);
+      background: rgba(45, 212, 191, 0.22);
+      color: #99f6e4;
+      box-shadow: 0 0 18px rgba(45, 212, 191, 0.3);
+    }
+    .audio-bars {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 11px;
+    }
+    .audio-bars span {
+      width: 2.5px;
+      background: currentColor;
+      border-radius: 1px;
+      height: 3px;
+      transition: height 0.15s ease;
+    }
+    .top-btn.audio-btn.playing .audio-bars span:nth-child(1) { animation: eqBar 0.7s infinite ease-in-out 0.0s; }
+    .top-btn.audio-btn.playing .audio-bars span:nth-child(2) { animation: eqBar 0.7s infinite ease-in-out 0.2s; }
+    .top-btn.audio-btn.playing .audio-bars span:nth-child(3) { animation: eqBar 0.7s infinite ease-in-out 0.4s; }
+    @keyframes eqBar {
+      0%, 100% { height: 3px; }
+      50% { height: 11px; }
+    }
+
+    /* ================= LEFT PILLAR SELECTOR & PAPER THEORY DRAWER ================= */
+    #left-drawer {
+      position: fixed;
+      top: 76px;
+      left: 16px;
+      bottom: 16px;
+      width: 348px;
+      z-index: 15;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+    }
+
+    .pillar-nav-card {
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 10px;
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .pillar-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 11px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.18s ease;
+      color: var(--text-main);
+    }
+    .pillar-btn:hover {
+      background: rgba(30, 41, 59, 0.78);
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+    .pillar-btn.active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(251, 191, 36, 0.12));
+      border-color: var(--cyan);
+      box-shadow: inset 0 0 16px rgba(56, 189, 248, 0.15);
+    }
+
+    .pillar-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 6px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--cyan);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .pillar-btn.active .pillar-badge {
+      background: var(--gold);
+      color: #03060d;
+    }
+
+    .pillar-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .pillar-title {
+      font-size: 12.8px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.3;
+    }
+    .pillar-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .theory-card {
+      flex: 1;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      pointer-events: auto;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .theory-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--cyan);
+    }
+    .theory-heading {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.22;
+      color: #fff;
+    }
+    .theory-desc {
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: rgba(226, 232, 240, 0.92);
+    }
+    .paper-quote-box {
+      padding: 9px 12px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.78);
+      border-left: 3px solid var(--gold);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-style: italic;
+      font-size: 14.5px;
+      line-height: 1.46;
+      color: #fef3c7;
+    }
+    .interaction-tip {
+      margin-top: auto;
+      padding: 9px 11px;
+      border-radius: 8px;
+      background: rgba(45, 212, 191, 0.1);
+      border: 1px solid rgba(45, 212, 191, 0.32);
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: #99f6e4;
+    }
+
+    /* ================= RIGHT FLAGSHIP WORKBENCH CONSOLE ================= */
+    #right-console {
+      position: fixed;
+      top: 76px;
+      right: 16px;
+      bottom: 16px;
+      width: 368px;
+      z-index: 15;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+    }
+
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      padding-bottom: 8px;
+    }
+    .console-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .auto-demo-btn {
+      background: rgba(45, 212, 191, 0.16);
+      border: 1px solid rgba(45, 212, 191, 0.5);
+      color: #99f6e4;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .auto-demo-btn.running {
+      background: rgba(251, 191, 36, 0.24);
+      border-color: var(--gold);
+      color: #fef3c7;
+    }
+
+    .control-block {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding-bottom: 11px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    }
+    .block-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--cyan);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .btn-grid.single {
+      grid-template-columns: 1fr;
+    }
+    .lab-btn {
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: #e2e8f0;
+      font-size: 11.5px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .lab-btn:hover {
+      border-color: var(--cyan);
+      background: rgba(56, 189, 248, 0.15);
+      color: #fff;
+    }
+    .lab-btn.active {
+      background: rgba(56, 189, 248, 0.24);
+      border-color: var(--cyan);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+    .lab-btn.gold.active, .lab-btn.gold:hover {
+      background: rgba(251, 191, 36, 0.22);
+      border-color: var(--gold);
+      color: #fef3c7;
+    }
+    .lab-btn.rose.active, .lab-btn.rose:hover {
+      background: rgba(251, 113, 133, 0.22);
+      border-color: var(--rose);
+      color: #ffe4e6;
+    }
+    .lab-btn.teal.active, .lab-btn.teal:hover {
+      background: rgba(45, 212, 191, 0.22);
+      border-color: var(--teal);
+      color: #ccfbf1;
+    }
+
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .slider-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11.5px;
+      color: #cbd5e1;
+    }
+    .slider-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--cyan);
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.22);
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 8px var(--cyan);
+      cursor: pointer;
+    }
+
+    /* Live Quantitative Gauges (for P1/P2/P3 & Telemetry) */
+    .gauge-card {
+      background: rgba(4, 8, 18, 0.82);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .gauge-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .gauge-label-line {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: #cbd5e1;
+    }
+    .gauge-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(148, 163, 184, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .gauge-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.25s ease;
+    }
+
+    .legend-compact {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      color: #cbd5e1;
+    }
+    .swatch {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ================= BOTTOM FLOATING BAR ================= */
+    #bottom-hud {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--panel-border);
+      border-radius: 999px;
+      padding: 7px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.65);
+    }
+    .status-text {
+      font-size: 12px;
+      color: #e2e8f0;
+    }
+    .status-text strong { color: var(--gold); }
+    .quick-btn {
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid var(--cyan);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+    .quick-btn:hover {
+      background: rgba(56, 189, 248, 0.38);
+    }
+
+    /* 3D Floating CSS2D Labels */
+    .scene-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 7px;
+      background: rgba(5, 10, 22, 0.86);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      color: #f8fafc;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+      transition: opacity 0.28s ease;
+    }
+    .scene-tag .sub {
+      display: block;
+      font-size: 9.5px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .scene-tag.cyan { border-color: rgba(56, 189, 248, 0.75); color: #bae6fd; }
+    .scene-tag.gold { border-color: rgba(251, 191, 36, 0.8); color: #fde68a; }
+    .scene-tag.rose { border-color: rgba(251, 113, 133, 0.8); color: #fecdd3; }
+    .scene-tag.teal { border-color: rgba(45, 212, 191, 0.8); color: #99f6e4; }
+    .scene-tag.violet { border-color: rgba(167, 139, 250, 0.8); color: #ddd6fe; }
+
+    body.hide-panels #left-drawer { transform: translateX(-380px); opacity: 0; }
+    body.hide-panels #right-console { transform: translateX(390px); opacity: 0; }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="canvas-container" title="Click anywhere on the 3D field to drop a Prompt Boundary Condition"></div>
+  <div id="label-container"></div>
+  <audio id="bgm-player" src="Sacred%20Vastness.mp3" loop preload="auto"></audio>
+
+  <!-- ================= TOP HEADER BAR ================= -->
+  <header id="top-bar">
+    <div class="brand-left">
+      <div class="brand-badge">
+        <span class="dot"></span>
+        <span id="ui-badge">TAO FENG (2026) · ZENODO v3 · 交互式 3D 论文可视化</span>
+      </div>
+      <div class="brand-title">From Agents to Intelligence Fields</div>
+    </div>
+
+    <div class="top-actions">
+      <button class="top-btn audio-btn" id="btn-cosmic-audio" title="播放 / 暂停背景音乐: Sacred Vastness.mp3">
+        <span class="audio-bars"><span></span><span></span><span></span></span>
+        <span id="ui-audio-btn">🎵 BGM: Sacred Vastness</span>
+      </button>
+      <button class="top-btn active" id="btn-audio-theme" title="开启 / 关闭 3D 灵动交互音效">
+        <span>✨</span> <span id="ui-audio-theme">灵动音效: 开启</span>
+      </button>
+      <button class="top-btn" id="btn-hide-ui" title="隐藏两侧面板进入全屏沉浸视图 (快捷键: H)">
+        <span>◫</span> <span id="ui-hide-btn">全屏视图 (H)</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= LEFT 4-PILLAR SELECTOR & THEORY DRAWER ================= -->
+  <aside id="left-drawer">
+    <div class="pillar-nav-card">
+      <div class="nav-header-row">
+        <span id="ui-nav-header">4 FLAGSHIP PILLARS · 四大重点打造场景</span>
+        <span>SEC 1–10</span>
+      </div>
+      <div id="pillar-list"></div>
+    </div>
+
+    <div class="theory-card">
+      <div class="theory-eyebrow" id="theory-eyebrow"></div>
+      <h2 class="theory-heading" id="theory-heading"></h2>
+      <div class="theory-desc" id="theory-desc"></div>
+      <div class="paper-quote-box" id="theory-quote"></div>
+      <div class="interaction-tip" id="theory-tip"></div>
+    </div>
+  </aside>
+
+  <!-- ================= RIGHT FLAGSHIP SANDBOX WORKBENCH ================= -->
+  <aside id="right-console">
+    <div class="console-header">
+      <div class="console-title" id="ui-console-title">🎛️ 场景专属实验台 (INTERACTIVE WORKBENCH)</div>
+      <button class="auto-demo-btn running" id="btn-auto-demo">▶ 自动演示中 (Auto-Demo)</button>
+    </div>
+
+    <!-- Dynamic Pillar-Specific Deep Controls -->
+    <div class="control-block" id="pillar-specific-controls"></div>
+
+    <!-- Quantitative Empirical Gauges (P1 / P2 / P3 / Field Metrics) -->
+    <div class="control-block">
+      <div class="block-title">
+        <span id="ui-metrics-title">EMPIRICAL METRICS · 实时动力学与预测指标</span>
+      </div>
+      <div class="gauge-card">
+        <div class="gauge-row">
+          <div class="gauge-label-line">
+            <span id="g1-label">场连续性与展开度 (Field Continuity)</span>
+            <span id="g1-val" style="color:var(--cyan);">100%</span>
+          </div>
+          <div class="gauge-bar-bg">
+            <div class="gauge-bar-fill" id="g1-bar" style="width:100%; background:var(--cyan);"></div>
+          </div>
+        </div>
+
+        <div class="gauge-row">
+          <div class="gauge-label-line">
+            <span id="g2-label">P1 轨迹收敛稳定性 (1 - Variance σ²)</span>
+            <span id="g2-val" style="color:var(--teal);">92% (Low σ²)</span>
+          </div>
+          <div class="gauge-bar-bg">
+            <div class="gauge-bar-fill" id="g2-bar" style="width:92%; background:var(--teal);"></div>
+          </div>
+        </div>
+
+        <div class="gauge-row">
+          <div class="gauge-label-line">
+            <span id="g3-label">P2 目标吸引子激发效率 (Goal Reach Rate)</span>
+            <span id="g3-val" style="color:var(--gold);">94% (Valley Path)</span>
+          </div>
+          <div class="gauge-bar-bg">
+            <div class="gauge-bar-fill" id="g3-bar" style="width:94%; background:var(--gold);"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Universal Terrain & Field Sliders -->
+    <div class="control-block">
+      <div class="block-title">
+        <span id="ui-sliders-title">GLOBAL FIELD PARAMETERS · 全局场参数微调</span>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-head">
+          <span id="lbl-morph">隐喻相变 (Person/Masks ➔ Continuous Field)</span>
+          <span class="slider-val" id="val-morph">100%</span>
+        </div>
+        <input type="range" id="slider-morph" min="0" max="1" step="0.01" value="1" />
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-head">
+          <span id="lbl-pretrain">预训练基础地貌深度 (Pretraining Valleys)</span>
+          <span class="slider-val" id="val-pretrain">1.00</span>
+        </div>
+        <input type="range" id="slider-pretrain" min="0" max="1.6" step="0.02" value="1.0" />
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-head">
+          <span id="lbl-rlhf">RLHF 对齐深谷与拒绝高墙 (Anisotropy)</span>
+          <span class="slider-val" id="val-rlhf">1.05</span>
+        </div>
+        <input type="range" id="slider-rlhf" min="0" max="1.6" step="0.02" value="1.05" />
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-head">
+          <span id="lbl-temp">采样温度与随机噪声 (Sampling Temp)</span>
+          <span class="slider-val" id="val-temp">0.30</span>
+        </div>
+        <input type="range" id="slider-temp" min="0.05" max="1.5" step="0.05" value="0.30" />
+      </div>
+    </div>
+
+    <!-- Visual Legend -->
+    <div class="control-block" style="border-bottom:none;">
+      <div class="block-title" id="ui-legend-title">SCENE LEGEND · 当前场景图例</div>
+      <div class="legend-compact" id="legend-box"></div>
+    </div>
+  </aside>
+
+  <!-- ================= BOTTOM QUICK INTERACTION BAR ================= -->
+  <div id="bottom-hud">
+    <div class="status-text" id="bottom-hint">
+      💡 <strong>直接交互：</strong>点击 3D 智能场表面任意位置可投放「Prompt 边界条件探针」，实时激发顺谷粒子流！
+    </div>
+    <button class="quick-btn" id="btn-drop-probe">⚡ 投放随机边界探针 (Excite Field)</button>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+    // ============================================================================
+    // 1. BILINGUAL TEXT & 4 FLAGSHIP PILLARS DEFINITION
+    // ============================================================================
+    let lang = 'zh';
+
+    const PILLARS = [
+      {
+        id: 0,
+        badge: "PILLAR 1 ★",
+        zhTitle: "隐喻对比：拟人小人 / 离散角色面具 ➔ 连续智能场",
+        enTitle: "Metaphor Evolution: Person & Masks ➔ Continuous Field",
+        sub: "Sections 1–3 · Continuity, Boundary Conditions & Modes",
+        eyebrow: "SECTIONS 1–3 · BEYOND PERSON & DISCRETE ROLE-PLAY",
+        zhHeading: "从「单一主体 / 离散角色卡片」到「连续高维智能场」",
+        enHeading: "From Unitary Person & Discrete Masks to Continuous Field",
+        zhDesc: "第 1–3 节梳理了去拟人化的演进脉络：\n• **拟人主体（Person/Homunculus, §1）**：误把 LLM 当作拥有固定信念与性格的「盒中小人」。\n• **角色扮演与模拟器（Shanahan 2023; janus 2022, §2）**：指出模型可扮演无数角色，但仍易被理解为切换「离散面具卡片」。\n• **智能场视图（Intelligence Field, §3 ★）**：强调**连续性（Continuity）**——「数学老师模式」与「严苛审稿人模式」不是模型内部的多个小人，而是**同一个连续高维场在不同边界条件（Prompt）激发下的本征模态**，甚至可以连续线性叠加！",
+        enDesc: "Sections 1–3 trace the progression beyond anthropomorphism:\n• Unitary Person (§1): Projects fixed beliefs onto a homunculus.\n• Role-Play & Simulator (Shanahan 2023; janus 2022, §2): Models play many characters, yet often pictured as discrete masks.\n• Intelligence Field (§3 ★): Foregrounds Continuity—'math teacher' and 'rigorous reviewer' are not separate homunculi, but continuous modes of one field excited by boundary conditions!",
+        quote: "“Ask it to ‘explain like a math teacher’ and a pedagogical mode is excited; ask it to ‘critique like a rigorous reviewer’ and a reviewer mode is excited. These are not separate homunculi inside the model but distinct modes of one field.” (§3)",
+        zhTip: "👉 在右侧实验台依次点击对比 `① 拟人盒中小人`、`② 离散角色面具环`、`③ 连续高维智能场`，并测试下方的「多模态连续混合激发（Teacher + Reviewer + Poet）」！",
+        enTip: "👉 Click through '① Unitary Person', '② Discrete Role Masks', and '③ Continuous Field' on the right, then test the 'Continuous Mode Superposition' buttons!",
+        camPos: [0, 12.5, 29],
+        camLook: [0, 3.2, 0],
+        legend: [
+          { color: "#fb7185", zh: "拟人主体核心 (Unitary Homunculus Illusion)", en: "Anthropomorphic Homunculus Core" },
+          { color: "#fbbf24", zh: "6 张离散角色面具卡片 (Shanahan Role-Play Masks)", en: "6 Discrete Role-Play Character Masks" },
+          { color: "#38bdf8", zh: "连续分布的高维智能场 (Continuous Intelligence Field)", en: "Continuous High-Dimensional Intelligence Field" },
+          { color: "#2dd4bf", zh: "被边界条件激发的局部连续模态波 (Excited Field Mode)", en: "Local Mode Excited by Prompt Boundary Condition" }
+        ]
+      },
+      {
+        id: 1,
+        badge: "PILLAR 2 ★",
+        zhTitle: "各向异性地形雕刻：平坦场 ➔ 预训练地貌 ➔ RLHF 深谷高墙",
+        enTitle: "Anisotropic Terrain: Flat Sheet ➔ Pretraining ➔ RLHF",
+        sub: "Sections 4 & 5.2 · Topography, Deep Valleys & Refusal Walls",
+        eyebrow: "SECTIONS 4 & 5.2 · ANISOTROPIC TOPOGRAPHY STUDIO",
+        zhHeading: "四阶地形重塑：为什么智能场拥有自己的「重力」？",
+        enHeading: "4-Stage Terraforming: Why the Field Has Its Own Gravity",
+        zhDesc: "「场」这个词容易让人误以为它是一块平坦、中立、可随意塑造的画布。第 4 节与 5.2 节指出：真实的 LLM 智能场具有强烈的**各向异性（Anisotropy）**：\n1. **平坦理想场（Flat Sheet）**：未经训练的均匀空间，无方向偏好。\n2. **预训练基础地貌（Pretraining Topography）**：在海量语料上刻画出高频语言河床与自然推理通道。\n3. **RLHF 默认助手深谷（Helpful Assistant Trench）**：偏好微调在场中央压出一条极深的「礼貌、谨慎、乐于助人的默认助手河床」。\n4. **安全对齐拒绝高墙（Safety Refusal Walls）**：在特定敏感区域周围筑起陡峭的势能高墙，并铲平危险吸引子。",
+        enDesc: "Section 4 & 5.2 reveal that the field is strongly anisotropic:\n1. Flat Uniform Sheet: Naive neutral medium.\n2. Pretraining Topography: Carves natural linguistic riverbeds and reasoning paths.\n3. RLHF Assistant Valley: Presses a deep default 'helpful, hedging assistant' trench.\n4. Safety Refusal Walls: Raises steep potential barriers that prompts cannot easily bend.",
+        quote: "“Seen as a field, alignment is reshaping terrain: leveling dangerous attractors, deepening the riverbeds of reliable paths, and turning honest, careful outputs into the valleys the system most easily slides into.” (§5.2)",
+        zhTip: "👉 点击右侧四阶演化按钮（`阶段 A: 平坦场` ➔ `阶段 B: 预训练` ➔ `阶段 C: RLHF 深谷` ➔ `阶段 D: 拒绝高墙`），还可以开启「等高线高亮」与「260 颗重力测试雨滴」！",
+        enTip: "👉 Step through Stages A ➔ B ➔ C ➔ D in the right workbench, and toggle 'Iso-Contour Lines' & 'Gravity Raindrop Test' to watch particles slide into the RLHF riverbed!",
+        camPos: [17, 14.5, 24],
+        camLook: [0, -0.5, 1.0],
+        legend: [
+          { color: "#94a3b8", zh: "阶段 A：平坦无偏中立场 (Flat Uniform Sheet)", en: "Stage A: Flat Uniform Neutral Medium" },
+          { color: "#38bdf8", zh: "阶段 B：预训练自然语言与推理河床 (Pretraining Valleys)", en: "Stage B: Pretraining Linguistic Riverbeds" },
+          { color: "#2dd4bf", zh: "阶段 C：RLHF 默认助手强吸引深谷 (Default Assistant Trench)", en: "Stage C: Deep RLHF Helpful-Assistant Valley" },
+          { color: "#fb7185", zh: "阶段 D：RLHF 安全对齐拒绝高墙 (Steep Refusal Barrier)", en: "Stage D: Steep RLHF Refusal & Safety Wall" }
+        ]
+      },
+      {
+        id: 2,
+        badge: "PILLAR 3 ★",
+        zhTitle: "「先勘测后推动」交互沙盒：强推高墙(P2) vs. 顺谷重构",
+        enTitle: "Survey Before You Push Sandbox: P1, P2 & P3 Lab",
+        sub: "Sections 5.1, 5.3 & 6 · Falsifiable Predictions P1–P3",
+        eyebrow: "SECTION 6 · OPERATING PRINCIPLE & TESTABLE PREDICTIONS",
+        zhHeading: "从哲学视角到可证伪工具：Survey Before You Push",
+        enHeading: "From Perspective to Falsifiable Tool: Survey Before You Push",
+        zhDesc: "第 6 节提出了核心操作原则 **Survey Before You Push（先勘测，后推动）** 与三大可证伪预测：\n• **P1（顺谷 vs. 逆谷方差对比）**：顺应地形的任务，简短与详细 Prompt 均稳定滑入同一谷底（低方差 $\\sigma^2$）；逆地形任务则与地形重力激烈博弈，措辞微调就会导致结果剧烈分叉（高方差）。\n• **P2（强硬措辞收益递减）**：面对深谷或高墙，单纯加大命令音量（`1x ➔ 10x Forceful Command`）会撞墙停滞并滑落；**切换路径**（重构角色/背景/多轮上下文环 §5.3）顺侧谷绕行则轻松抵达目标。\n• **P3（跨模型迁移率）**：固定 Prompt 的迁移效果取决于两模型**训练地形的几何相似度**，而非单纯取决于参数规模。",
+        enDesc: "Section 6 derives 'Survey Before You Push' and three falsifiable predictions:\n• P1 (Variance): Terrain-aligned prompts converge tightly; terrain-opposed prompts scatter with high variance.\n• P2 (Diminishing Returns): Intensifying forceful commands (1x➔10x) against an RLHF wall stalls; switching paths via role/context reframing glides through usable valleys.\n• P3 (Transfer): Prompt transferability correlates with training terrain similarity.",
+        quote: "“Merely intensifying a command to oppose a deep valley yields rapidly diminishing returns; switching paths—re-casting the role, reframing the task, or supplying context—outperforms increasing command ‘volume.’” (§6, P2)",
+        zhTip: "👉 在右侧切换验证 `实验 P1 (顺谷 vs 逆谷方差)`、`实验 P2 (拖动 1x-10x 强推音量滑块对比声呐勘测绕行)` 与 `实验 P3 (跨模型地形迁移)`！",
+        enTip: "👉 Switch between 'P1 Variance Test', 'P2 Forceful Volume Slider (1x–10x) vs. Surveyed Path', and 'P3 Cross-Model Terrain Transfer' in the right console!",
+        camPos: [-13, 14, 23],
+        camLook: [0, -0.5, 1.5],
+        legend: [
+          { color: "#fb7185", zh: "P2 强推指令流：撞击 RLHF 陡墙受阻并高方差散射", en: "P2 Forceful Command Stream: Stalls & Scatters at Wall" },
+          { color: "#38bdf8", zh: "Step 1 勘测声呐：低约束探测脉冲扫描可用鞍部与侧谷", en: "Step 1 Survey Sonar: Low-Constraint Topographic Scan" },
+          { color: "#fbbf24", zh: "Step 2 顺谷引导流：重构角色与边界条件顺河床滑行", en: "Step 2 Reframed Boundary Stream: Glides Along Valley" },
+          { color: "#2dd4bf", zh: "Sec 5.3 多轮上下文环：逐轮累积并收窄允许路径", en: "Sec 5.3 Multi-Turn Context Rings: Carves Admissible Path" }
+        ]
+      },
+      {
+        id: 3,
+        badge: "PILLAR 4 ★",
+        zhTitle: "双层架构视图：底层发光「智能场」+ 顶层「Agent 控制环路」",
+        enTitle: "Dual-Layer View: Base Intelligence Field + Agent Control Loop",
+        sub: "Sections 7–8 · Agent Atop Field & Human Co-Construction",
+        eyebrow: "SECTIONS 7–8 · TWO LEVELS & HUMAN CO-CONSTRUCTION",
+        zhHeading: "LLM 是底层的智能场；Agent 是生长在场之上的控制系统",
+        enHeading: "LLM as Intelligence Field; Agent as Control System Atop It",
+        zhDesc: "第 7–8 节完成了整篇论文的架构拼图：\n• **Level 1（底层 Base LLM = 智能场）**：无状态、分布式的高维响应地形，内部编码了潜在的 *Agent Models*（Andreas 2022），但本身没有持续自我或长程目标。\n• **Level 2（顶层 AI Agent = 闭环控制系统）**：架设在场之上的工程化架构（`① Goals 目标分解`、`② Memory 记忆缓冲`、`③ Tools 外部工具执行`、`④ Feedback 反思纠错`）。顶层控制环不断向底层智能场发射向下边界光束（Prompts/Context），激发局部波包并采样向上回传的响应流。\n• **人–场认知共建（Sec 8）**：开启「人类交互信标」后，可同时观察**人类 $\\leftrightarrow$ 顶层 Agent $\\leftrightarrow$ 底层智能场**的三元双螺旋共振！",
+        enDesc: "Sections 7–8 complete the architectural synthesis:\n• Level 1 (Base LLM): A stateless, anisotropic intelligence field encoding latent agent models (Andreas 2022).\n• Level 2 (AI Agent): A closed-loop control system constructed atop the field (Goals, Memory, Tools, Feedback) that repeatedly perturbs the base field via downward prompt beams and samples upward response streams.\n• Section 8 (Human Co-Construction): Toggle the Human Interlocutor Helix to witness full tri-layer cognitive resonance!",
+        quote: "“An LLM is itself more like an intelligence field; an Agent is an action system constructed atop that field... Future systems are plausibly recombinations: a vast, terrain-bearing field at the base, and an agent architecture of memory, goals, tools, perception, action, and feedback on top.” (§7)",
+        zhTip: "👉 在右侧切换 `双层耦合架构`、`场内潜藏 Agent Models (Andreas 2022)` 或 `+ 人类双螺旋共振 (§8)`，并单步点击 `①目标` `②记忆` `③工具` `④纠错` 观察垂直激光束如何激发底层智能场！",
+        enTip: "👉 Toggle 'Coupled Dual-Layer', 'Latent Agent Models (Andreas 2022)', or '+ Human Resonance Helix (§8)', and step through the 4 Agent Subsystems!",
+        camPos: [0, 10.8, 33],
+        camLook: [0, 4.2, 0],
+        legend: [
+          { color: "#fbbf24", zh: "Level 2 顶层架构：Agent 闭环控制环与主控信标", en: "Level 2: Suspended Agent Control Ring & Executive Token" },
+          { color: "#a78bfa", zh: "向下边界激光束：Agent 向底层场投射 Prompt/Context", en: "Downward Beam: Agent Imposing Boundary Conditions" },
+          { color: "#2dd4bf", zh: "向上采样粒子流：底层场激发后回传的采样路径", en: "Upward Stream: Sampled Field Excitation Trajectory" },
+          { color: "#fde68a", zh: "Section 8 人类认知共建双螺旋 (Human–Field Resonance)", en: "Section 8 Human–Field Co-Construction Helix" }
+        ]
+      }
+    ];
+
+    // ============================================================================
+    // 2. THREE.JS SCENE, CAMERA, RENDERERS & POST-PROCESSING
+    // ============================================================================
+    const container = document.getElementById('canvas-container');
+    const labelContainer = document.getElementById('label-container');
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x03060d);
+    scene.fog = new THREE.FogExp2(0x03060d, 0.0108);
+
+    const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 300);
+    camera.position.set(0, 12.5, 29);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
+    container.appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelContainer.appendChild(labelRenderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.055;
+    controls.maxDistance = 85;
+    controls.minDistance = 6;
+    controls.target.set(0, 3.2, 0);
+
+    const composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.92,
+      0.52,
+      0.22
+    );
+    composer.addPass(bloomPass);
+
+    scene.add(new THREE.AmbientLight(0x1e293b, 1.6));
+    const dirLight = new THREE.DirectionalLight(0x38bdf8, 1.8);
+    dirLight.position.set(16, 32, 20);
+    scene.add(dirLight);
+
+    // ============================================================================
+    // 3. UNIFIED SIMULATION STATE across all 4 Flagship Pillars
+    // ============================================================================
+    const state = {
+      pillar: 0,           // 0: Pillar 1 (Sec 1-3), 1: Pillar 2 (Sec 4/5.2), 2: Pillar 3 (Sec 5/6), 3: Pillar 4 (Sec 7/8)
+      autoDemo: true,      // Gently cycles sub-states in the active pillar unless user clicks a specific sub-mode
+      demoTimer: 0,
+
+      // Global sliders
+      morph: 1.0,          // 0.0 = Unitary Person, 0.45 = Discrete Role Masks, 1.0 = Continuous Intelligence Field
+      pretrain: 1.0,
+      rlhf: 1.05,
+      temp: 0.30,
+      separation: 10.5,
+
+      // Pillar 1 specific (Sec 1-3 Metaphor & Continuity)
+      p1Framing: 'field',  // 'person' | 'masks' | 'field'
+      p1ExciteMode: 'teacher', // 'teacher' | 'reviewer' | 'poet' | 'blend'
+
+      // Pillar 2 specific (Sec 4 & 5.2 Anisotropic Terraforming)
+      p2Stage: 'stageD',   // 'stageA' (Flat) | 'stageB' (Pretrain) | 'stageC' (RLHF Valley) | 'stageD' (Full + Refusal Wall)
+      p2ShowContours: true,
+      p2ShowRaindrops: true,
+
+      // Pillar 3 specific (Sec 5.1, 5.3 & 6 Survey Before You Push & P1-P3)
+      p3Experiment: 'P2',  // 'P1' (Variance) | 'P2' (Forceful vs Surveyed) | 'P3' (Cross-Model Transfer)
+      p3ForceVolume: 2.0,  // 1x to 10x command volume against wall
+      p3Strategy: 'both',  // 'both' | 'forceful' | 'surveyed'
+      p3TransferModel: 'shared', // 'shared' (High transfer) | 'divergent' (Low transfer)
+
+      // Pillar 4 specific (Sec 7 & 8 Dual-Layer Architecture + Human Co-Construction)
+      p4ArchView: 'coupled', // 'coupled' | 'latent' | 'human_tri' | 'field_only'
+      p4ActiveNode: 0,       // 0: Goals, 1: Memory, 2: Tools, 3: Critique
+      p4LoopAngle: 0,        // Continuous angle of executive token around upper ring
+
+      // Camera interpolation
+      camTransitioning: false,
+      desiredCamPos: new THREE.Vector3(0, 12.5, 29),
+      desiredCamLook: new THREE.Vector3(0, 3.2, 0)
+    };
+
+    // ============================================================================
+    // 3.5 DUAL-CHANNEL AUDIO ENGINE:
+    //     Channel 1: Dedicated BGM Track ("Sacred Vastness.mp3")
+    //     Channel 2: Pure Event-Driven Interactive SFX (Zero Continuous Hum/Noise)
+    // ============================================================================
+    const LYDIAN_SCALE = [293.66, 329.63, 369.99, 415.30, 440.0, 493.88, 554.37, 622.25, 659.25, 739.99, 880.0];
+    const bgmPlayer = document.getElementById('bgm-player');
+    bgmPlayer.volume = 0.65;
+
+    const cosmicAudio = {
+      ctx: null,
+      bgmPlaying: false,
+      sfxEnabled: true,
+      masterGain: null,
+      delayNode: null,
+      lastSonarCycle: 0,
+
+      initSFX() {
+        if (this.ctx) return;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioCtx();
+
+        // Master SFX output (pure event-driven, zero continuous oscillators or noise buffers!)
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.value = 0.42;
+        this.masterGain.connect(this.ctx.destination);
+
+        // Pure, crystal-clear Stereo Ping-Pong Echo Delay for interactive SFX
+        this.delayNode = this.ctx.createDelay(2.0);
+        this.delayNode.delayTime.value = 0.36;
+        const delayFeedback = this.ctx.createGain();
+        delayFeedback.gain.value = 0.36;
+        const delayFilter = this.ctx.createBiquadFilter();
+        delayFilter.type = 'lowpass';
+        delayFilter.frequency.value = 2200;
+
+        const wetGain = this.ctx.createGain();
+        wetGain.gain.value = 0.45;
+
+        this.delayNode.connect(delayFilter);
+        delayFilter.connect(delayFeedback);
+        delayFeedback.connect(this.delayNode);
+        delayFilter.connect(wetGain);
+        wetGain.connect(this.masterGain);
+      },
+
+      toggleBGM(forceState = null) {
+        const target = forceState !== null ? forceState : !this.bgmPlaying;
+        if (target) {
+          bgmPlayer.play().then(() => {
+            this.bgmPlaying = true;
+            this.refreshButtonsUI();
+          }).catch(() => {
+            // Browser blocked autoplay until user gesture
+            this.bgmPlaying = false;
+            this.refreshButtonsUI();
+          });
+        } else {
+          bgmPlayer.pause();
+          this.bgmPlaying = false;
+          this.refreshButtonsUI();
+        }
+      },
+
+      toggleSFX() {
+        this.initSFX();
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+        this.sfxEnabled = !this.sfxEnabled;
+        this.refreshButtonsUI();
+        if (this.sfxEnabled) {
+          this.playChordBloom([440, 554.37, 659.25, 880.0], 0.06);
+        }
+      },
+
+      refreshButtonsUI() {
+        const bgmBtn = document.getElementById('btn-cosmic-audio');
+        const bgmLbl = document.getElementById('ui-audio-btn');
+        bgmBtn.classList.toggle('playing', this.bgmPlaying);
+        bgmLbl.textContent = this.bgmPlaying
+          ? (lang === 'zh' ? '🎵 BGM: Sacred Vastness (播放中)' : '🎵 BGM: Sacred Vastness (ON)')
+          : (lang === 'zh' ? '🎵 BGM: Sacred Vastness (点击播放)' : '🎵 BGM: Sacred Vastness (Play)');
+
+        const sfxBtn = document.getElementById('btn-audio-theme');
+        const sfxLbl = document.getElementById('ui-audio-theme');
+        sfxBtn.classList.toggle('active', this.sfxEnabled);
+        sfxLbl.textContent = this.sfxEnabled
+          ? (lang === 'zh' ? '✨ 灵动音效: 开启' : '✨ SFX: ON')
+          : (lang === 'zh' ? '✨ 灵动音效: 关闭' : '✨ SFX: OFF');
+      },
+
+      // No-op stub so animate() loop has zero continuous background synthesis
+      updateContinuous() {},
+
+      // Spatialized FM Crystalline Chime when exciting a point (wx, wz) on the 3D Intelligence Field
+      playSpatialExcitation(wx = 0, wz = 0, boost = 1.0) {
+        if (!this.sfxEnabled) return;
+        this.initSFX();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+
+        const now = this.ctx.currentTime;
+        const scale = LYDIAN_SCALE;
+
+        // Map X, Z coordinates to pitch index and stereo pan
+        const normX = Math.max(-1, Math.min(1, wx / 22));
+        const normZ = Math.max(0, Math.min(1, (wz + 18) / 36));
+        const noteIdx = Math.floor((1 - normZ) * (scale.length - 1));
+        const baseFreq = scale[noteIdx] || 440;
+
+        // Carrier + FM Modulator for glassy crystalline bell tone
+        const carrier = this.ctx.createOscillator();
+        const mod = this.ctx.createOscillator();
+        const modGain = this.ctx.createGain();
+        const env = this.ctx.createGain();
+        const panner = this.ctx.createStereoPanner();
+
+        carrier.type = 'sine';
+        carrier.frequency.setValueAtTime(baseFreq, now);
+
+        mod.type = 'sine';
+        mod.frequency.setValueAtTime(baseFreq * 2.0, now);
+        modGain.gain.setValueAtTime(baseFreq * 1.3 * boost, now);
+        modGain.gain.exponentialRampToValueAtTime(0.01, now + 0.55);
+
+        env.gain.setValueAtTime(0.001, now);
+        env.gain.linearRampToValueAtTime(0.12 * boost, now + 0.015);
+        env.gain.exponentialRampToValueAtTime(0.0001, now + 1.9);
+
+        panner.pan.value = normX * 0.8;
+
+        mod.connect(modGain);
+        modGain.connect(carrier.frequency);
+        carrier.connect(env);
+        env.connect(panner);
+        panner.connect(this.masterGain);
+        panner.connect(this.delayNode);
+
+        carrier.start(now);
+        mod.start(now);
+        carrier.stop(now + 2.0);
+        mod.stop(now + 2.0);
+      },
+
+      // Rich polyphonic chord shimmer (for Mode Superposition or Terraforming transitions)
+      playChordBloom(freqs, amp = 0.065) {
+        if (!this.sfxEnabled) return;
+        this.initSFX();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+
+        const now = this.ctx.currentTime;
+        freqs.forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const env = this.ctx.createGain();
+          const pan = this.ctx.createStereoPanner();
+          osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+          osc.frequency.setValueAtTime(f, now + i * 0.06);
+          env.gain.setValueAtTime(0.0001, now + i * 0.06);
+          env.gain.linearRampToValueAtTime(amp, now + i * 0.06 + 0.05);
+          env.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.06 + 2.2);
+          pan.pan.value = (i - (freqs.length - 1) / 2) * 0.35;
+
+          osc.connect(env);
+          env.connect(pan);
+          pan.connect(this.masterGain);
+          pan.connect(this.delayNode);
+          osc.start(now + i * 0.06);
+          osc.stop(now + i * 0.06 + 2.3);
+        });
+      },
+
+      // Deep-Space Radar Sonar Ping (Pillar 3: Survey Before You Push)
+      playSonarPing() {
+        if (!this.sfxEnabled) return;
+        this.initSFX();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const env = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1318.5, now); // E6 crystalline radar ping
+        osc.frequency.exponentialRampToValueAtTime(987.77, now + 0.32);
+        env.gain.setValueAtTime(0.001, now);
+        env.gain.linearRampToValueAtTime(0.05, now + 0.01);
+        env.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
+        osc.connect(env);
+        env.connect(this.masterGain);
+        env.connect(this.delayNode);
+        osc.start(now);
+        osc.stop(now + 1.25);
+      },
+
+      // Pillar 4: Agent-to-Field Downward Boundary Beam + Upward Sampled Response Arpeggio
+      playAgentCycleStep(nodeIdx) {
+        if (!this.sfxEnabled) return;
+        this.initSFX();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+
+        const now = this.ctx.currentTime;
+        const baseNotes = [LYDIAN_SCALE[0], LYDIAN_SCALE[2], LYDIAN_SCALE[4], LYDIAN_SCALE[6]];
+        const f = baseNotes[nodeIdx % 4] || 329.63;
+
+        // 1) Downward Prompt Boundary Beam
+        const beamOsc = this.ctx.createOscillator();
+        const beamEnv = this.ctx.createGain();
+        beamOsc.type = 'triangle';
+        beamOsc.frequency.setValueAtTime(f * 2, now);
+        beamOsc.frequency.exponentialRampToValueAtTime(f, now + 0.24);
+        beamEnv.gain.setValueAtTime(0.001, now);
+        beamEnv.gain.linearRampToValueAtTime(0.07, now + 0.02);
+        beamEnv.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+        beamOsc.connect(beamEnv);
+        beamEnv.connect(this.masterGain);
+        beamEnv.connect(this.delayNode);
+        beamOsc.start(now);
+        beamOsc.stop(now + 0.7);
+
+        // 2) Upward Sampled Field Response (3-note shimmering reply rising back to the Agent Ring)
+        [1.0, 1.25, 1.5].forEach((mult, step) => {
+          const upOsc = this.ctx.createOscillator();
+          const upEnv = this.ctx.createGain();
+          const t0 = now + 0.22 + step * 0.085;
+          upOsc.type = 'sine';
+          upOsc.frequency.setValueAtTime(f * mult, t0);
+          upEnv.gain.setValueAtTime(0.001, t0);
+          upEnv.gain.linearRampToValueAtTime(0.055, t0 + 0.015);
+          upEnv.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.95);
+          upOsc.connect(upEnv);
+          upEnv.connect(this.masterGain);
+          upEnv.connect(this.delayNode);
+          upOsc.start(t0);
+          upOsc.stop(t0 + 1.0);
+        });
+      }
+    };
+
+    document.getElementById('btn-cosmic-audio').onclick = (e) => {
+      e.stopPropagation();
+      cosmicAudio.toggleBGM();
+    };
+    document.getElementById('btn-audio-theme').onclick = (e) => {
+      e.stopPropagation();
+      cosmicAudio.toggleSFX();
+    };
+
+    // Try autoplaying Sacred Vastness.mp3 immediately, and unlock on first click if browser requires gesture
+    cosmicAudio.toggleBGM(true);
+    let firstGestureUnlocked = false;
+    window.addEventListener('pointerdown', () => {
+      if (!firstGestureUnlocked) {
+        firstGestureUnlocked = true;
+        cosmicAudio.initSFX();
+        if (cosmicAudio.ctx && cosmicAudio.ctx.state === 'suspended') {
+          cosmicAudio.ctx.resume();
+        }
+        if (!cosmicAudio.bgmPlaying) {
+          cosmicAudio.toggleBGM(true);
+        }
+      }
+    });
+
+    // Mathematical Heightfield Function supporting Pillar 2 stages & Pillar 3 P3 divergent model terrain
+    function getTerrainHeight(x, z, time) {
+      const wave = Math.sin(x * 0.22 + time * 1.1) * Math.cos(z * 0.22 - time * 0.85) * 0.28;
+
+      // If in Pillar 3 P3 "Divergent Model Terrain" mode, shift valley frequency/phase to show transfer failure
+      const phaseShift = (state.pillar === 2 && state.p3Experiment === 'P3' && state.p3TransferModel === 'divergent') ? 2.4 : 0.0;
+
+      const pretrain =
+        (Math.sin(x * 0.16 + phaseShift) * Math.cos(z * 0.15) * 2.05 +
+         Math.cos((x + z) * 0.11 - phaseShift) * 1.35 -
+         Math.exp(-((x + 7.5) * (x + 7.5) + (z - 3.8) * (z - 3.8)) * 0.038) * 2.5) *
+        state.pretrain;
+
+      // RLHF Helpful Assistant Valley
+      const riverZ = Math.sin(x * 0.14 + phaseShift * 0.8) * 4.2 + (phaseShift * 1.6);
+      const distRiver = z - riverZ;
+      const assistantValley = -Math.exp(-(distRiver * distRiver) * 0.09) * 5.1;
+
+      // Secondary Pedagogical / Reviewer Side Valley
+      const sideDist = z - (-6.8 + Math.cos(x * 0.12) * 2.0);
+      const sideValley = -Math.exp(-(sideDist * sideDist) * 0.12) * 3.1;
+
+      // Steep RLHF Safety Refusal Wall around (5.5, 7.2)
+      const wallMult = (state.pillar === 1 && state.p2Stage === 'stageC') ? 0.15 : 1.0;
+      const wallDistSq = (x - 5.5) * (x - 5.5) * 0.12 + (z - 7.2) * (z - 7.2) * 0.22;
+      const refusalWall = Math.exp(-wallDistSq) * 7.4 * wallMult;
+
+      return wave + pretrain + (assistantValley + sideValley + refusalWall) * state.rlhf;
+    }
+
+    function getTerrainGradient(x, z, time) {
+      const eps = 0.2;
+      return {
+        dx: (getTerrainHeight(x + eps, z, time) - getTerrainHeight(x - eps, z, time)) / (2 * eps),
+        dz: (getTerrainHeight(x, z + eps, time) - getTerrainHeight(x, z - eps, time)) / (2 * eps)
+      };
+    }
+
+    // ============================================================================
+    // 4. BUILD ALL 4 FLAGSHIP 3D APPARATUS GROUPS
+    // ============================================================================
+
+    // --- 4.0 Background Star Dust ---
+    const dustCount = 1300;
+    const dustGeo = new THREE.BufferGeometry();
+    const dustPos = new Float32Array(dustCount * 3);
+    for (let i = 0; i < dustCount; i++) {
+      dustPos[i * 3] = (Math.random() - 0.5) * 140;
+      dustPos[i * 3 + 1] = (Math.random() - 0.35) * 80;
+      dustPos[i * 3 + 2] = (Math.random() - 0.5) * 140;
+    }
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+    scene.add(new THREE.Points(dustGeo, new THREE.PointsMaterial({
+      color: 0x64748b, size: 0.2, transparent: true, opacity: 0.38, blending: THREE.AdditiveBlending
+    })));
+
+    // --- 4.1 PILLAR 1 APPARATUS: 3-State Morph Cloud (Unitary Person <-> 6 Discrete Masks <-> Continuous Field) ---
+    const morphCount = 4200;
+    const morphGeo = new THREE.BufferGeometry();
+    const posPerson = new Float32Array(morphCount * 3);
+    const posMasks  = new Float32Array(morphCount * 3);
+    const posField  = new Float32Array(morphCount * 3);
+    const posCurr   = new Float32Array(morphCount * 3);
+    const colMorph  = new Float32Array(morphCount * 3);
+
+    for (let i = 0; i < morphCount; i++) {
+      // State 1: Unitary Anthropomorphic Bust at center
+      const u = Math.random();
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      if (u < 0.58) {
+        const r = 2.7 * Math.cbrt(Math.random());
+        posPerson[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+        posPerson[i * 3 + 1] = 5.8 + r * 1.15 * Math.cos(phi);
+        posPerson[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+      } else {
+        const r = 4.4 * Math.sqrt(Math.random());
+        posPerson[i * 3]     = r * Math.cos(theta);
+        posPerson[i * 3 + 1] = 1.2 + Math.random() * 2.4 - r * 0.22;
+        posPerson[i * 3 + 2] = r * 0.55 * Math.sin(theta);
+      }
+
+      // State 2: 6 Discrete Role-Play Character Mask Cards in a Carousel Ring (Shanahan et al., 2023)
+      const maskIdx = i % 6;
+      const mAngle = (maskIdx / 6) * Math.PI * 2;
+      const ringR = 9.2;
+      const cardLocalX = (Math.random() - 0.5) * 2.8;
+      const cardLocalY = (Math.random() - 0.5) * 3.8;
+      // Rotate card tangent to ring
+      posMasks[i * 3]     = Math.cos(mAngle) * ringR - Math.sin(mAngle) * cardLocalX;
+      posMasks[i * 3 + 1] = 4.6 + cardLocalY;
+      posMasks[i * 3 + 2] = Math.sin(mAngle) * ringR + Math.cos(mAngle) * cardLocalX;
+
+      // State 3: Continuous Distributed Intelligence Field
+      posField[i * 3]     = (Math.random() - 0.5) * 48;
+      posField[i * 3 + 1] = (Math.random() - 0.5) * 0.9;
+      posField[i * 3 + 2] = (Math.random() - 0.5) * 36;
+    }
+    morphGeo.setAttribute('position', new THREE.BufferAttribute(posCurr, 3));
+    morphGeo.setAttribute('color', new THREE.BufferAttribute(colMorph, 3));
+    const morphMat = new THREE.PointsMaterial({
+      size: 0.25, vertexColors: true, transparent: true, opacity: 0.85,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    scene.add(new THREE.Points(morphGeo, morphMat));
+
+    // Unitary Homunculus Wireframe Shell + 6 Discrete Mask Wireframe Frames
+    const homunculusWire = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(2.8, 2),
+      new THREE.MeshBasicMaterial({ color: 0xfb7185, wireframe: true, transparent: true, opacity: 0 })
+    );
+    homunculusWire.position.set(0, 5.8, 0);
+    scene.add(homunculusWire);
+
+    const maskFramesGroup = new THREE.Group();
+    scene.add(maskFramesGroup);
+    const maskFrameMats = [];
+    for (let m = 0; m < 6; m++) {
+      const ang = (m / 6) * Math.PI * 2;
+      const fMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, wireframe: true, transparent: true, opacity: 0 });
+      const fMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 3.9, 4, 6), fMat);
+      fMesh.position.set(Math.cos(ang) * 9.2, 4.6, Math.sin(ang) * 9.2);
+      fMesh.lookAt(0, 4.6, 0);
+      maskFramesGroup.add(fMesh);
+      maskFrameMats.push(fMat);
+    }
+
+    // --- 4.2 BASE LLM ANISOTROPIC TERRAIN SURFACE & CONTOUR LINES ---
+    const fieldW = 52, fieldD = 40, segX = 148, segZ = 114;
+    const terrainGeo = new THREE.PlaneGeometry(fieldW, fieldD, segX, segZ);
+    terrainGeo.rotateX(-Math.PI / 2);
+    const terrainPosAttr = terrainGeo.attributes.position;
+    terrainGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(terrainPosAttr.count * 3), 3));
+
+    const terrainSolidMat = new THREE.MeshStandardMaterial({
+      vertexColors: true, roughness: 0.52, metalness: 0.35,
+      transparent: true, opacity: 0.75, side: THREE.DoubleSide
+    });
+    const terrainMesh = new THREE.Mesh(terrainGeo, terrainSolidMat);
+    scene.add(terrainMesh);
+
+    const terrainWireMat = new THREE.MeshBasicMaterial({
+      vertexColors: true, wireframe: true, transparent: true, opacity: 0.4,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const terrainWire = new THREE.Mesh(terrainGeo, terrainWireMat);
+    terrainWire.position.y = 0.03;
+    scene.add(terrainWire);
+
+    // --- 4.3 GRAVITY RAINDROP TEST & RAYCAST PERTURBATION PARTICLES ---
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const userWaves = [];
+
+    const physCount = 260;
+    const physGeo = new THREE.BufferGeometry();
+    const physPos = new Float32Array(physCount * 3);
+    const physCol = new Float32Array(physCount * 3);
+    const physParticles = [];
+    for (let i = 0; i < physCount; i++) {
+      physParticles.push({
+        x: (Math.random() - 0.5) * 44,
+        z: (Math.random() - 0.5) * 32,
+        vx: 0, vz: 0,
+        life: Math.random(),
+        maxLife: 0.75 + Math.random() * 0.6,
+        userSpawned: false
+      });
+    }
+    physGeo.setAttribute('position', new THREE.BufferAttribute(physPos, 3));
+    physGeo.setAttribute('color', new THREE.BufferAttribute(physCol, 3));
+    const physMat = new THREE.PointsMaterial({
+      size: 0.38, vertexColors: true, transparent: true, opacity: 0.85,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    scene.add(new THREE.Points(physGeo, physMat));
+
+    function spawnExcitationAt(wx, wz, colorHex = 0xfbbf24) {
+      cosmicAudio.playSpatialExcitation(wx, wz, 1.0);
+      const rGeo = new THREE.RingGeometry(0.3, 0.7, 48).rotateX(-Math.PI / 2);
+      const rMat = new THREE.MeshBasicMaterial({
+        color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.95,
+        blending: THREE.AdditiveBlending
+      });
+      const rMesh = new THREE.Mesh(rGeo, rMat);
+      rMesh.position.set(wx, getTerrainHeight(wx, wz, performance.now() * 0.0012) + 0.28, wz);
+      scene.add(rMesh);
+      userWaves.push({ mesh: rMesh, mat: rMat, wx, wz, age: 0 });
+
+      for (let i = 0; i < 40; i++) {
+        const p = physParticles[Math.floor(Math.random() * physCount)];
+        const ang = Math.random() * Math.PI * 2;
+        const rad = Math.random() * 1.6;
+        p.x = wx + Math.cos(ang) * rad;
+        p.z = wz + Math.sin(ang) * rad;
+        p.vx = Math.cos(ang) * 1.4;
+        p.vz = Math.sin(ang) * 1.4;
+        p.life = 0;
+        p.userSpawned = true;
+      }
+    }
+
+    let downX = 0, downY = 0;
+    renderer.domElement.addEventListener('pointerdown', (e) => { downX = e.clientX; downY = e.clientY; });
+    renderer.domElement.addEventListener('pointerup', (e) => {
+      if (Math.hypot(e.clientX - downX, e.clientY - downY) < 6) {
+        pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+        pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        raycaster.setFromCamera(pointer, camera);
+        const hits = raycaster.intersectObject(terrainMesh);
+        if (hits.length > 0) spawnExcitationAt(hits[0].point.x, hits[0].point.z);
+      }
+    });
+    document.getElementById('btn-drop-probe').onclick = () => {
+      spawnExcitationAt((Math.random() - 0.5) * 16, (Math.random() - 0.5) * 10);
+    };
+
+    // --- 4.4 PILLAR 3 APPARATUS: Survey Before You Push & Predictions P1, P2, P3 ---
+    const p3Group = new THREE.Group();
+    scene.add(p3Group);
+
+    const surveyRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.6, 0.98, 64).rotateX(-Math.PI / 2),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide, transparent: true, opacity: 0, blending: THREE.AdditiveBlending })
+    );
+    p3Group.add(surveyRing);
+
+    const boundaryGate = new THREE.Mesh(
+      new THREE.TorusGeometry(1.95, 0.1, 16, 64),
+      new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0 })
+    );
+    p3Group.add(boundaryGate);
+
+    const contextRings = [];
+    for (let i = 0; i < 4; i++) {
+      const rMesh = new THREE.Mesh(
+        new THREE.TorusGeometry(1.3, 0.055, 12, 48).rotateY(Math.PI / 2),
+        new THREE.MeshBasicMaterial({ color: 0x2dd4bf, transparent: true, opacity: 0, blending: THREE.AdditiveBlending })
+      );
+      p3Group.add(rMesh);
+      contextRings.push(rMesh);
+    }
+
+    const streamCount = 180;
+    const streamGeo = new THREE.BufferGeometry();
+    const streamPos = new Float32Array(streamCount * 3);
+    const streamCol = new Float32Array(streamCount * 3);
+    const streamParticles = [];
+    for (let i = 0; i < streamCount; i++) {
+      streamParticles.push({
+        isOpposed: i < streamCount / 2,
+        t: Math.random(),
+        speed: 0.24 + Math.random() * 0.14,
+        offsetZ: (Math.random() - 0.5) * 1.6,
+        offsetY: Math.random() * 0.35
+      });
+    }
+    streamGeo.setAttribute('position', new THREE.BufferAttribute(streamPos, 3));
+    streamGeo.setAttribute('color', new THREE.BufferAttribute(streamCol, 3));
+    const streamMat = new THREE.PointsMaterial({
+      size: 0.45, vertexColors: true, transparent: true, opacity: 0,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    p3Group.add(new THREE.Points(streamGeo, streamMat));
+
+    // --- 4.5 PILLAR 4 APPARATUS: Dual-Layer Agent Control System + Active Executive Orb + Human Helix ---
+    const agentGroup = new THREE.Group();
+    agentGroup.position.set(0, state.separation, 0);
+    scene.add(agentGroup);
+
+    const controlRingMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0 });
+    agentGroup.add(new THREE.Mesh(new THREE.TorusGeometry(9.6, 0.09, 16, 120).rotateX(Math.PI / 2), controlRingMat));
+
+    const innerLoopMat = new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0 });
+    agentGroup.add(new THREE.Mesh(new THREE.TorusGeometry(4.8, 0.06, 16, 96).rotateX(Math.PI / 2), innerLoopMat));
+
+    const hubMat = new THREE.MeshBasicMaterial({ color: 0xfde68a, wireframe: true, transparent: true, opacity: 0 });
+    const centralHub = new THREE.Mesh(new THREE.OctahedronGeometry(1.25, 1), hubMat);
+    agentGroup.add(centralHub);
+
+    // Active Executive Signal Token Orb orbiting along the Control Ring
+    const execOrbMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
+    const execOrb = new THREE.Mesh(new THREE.SphereGeometry(0.52, 24, 24), execOrbMat);
+    agentGroup.add(execOrb);
+
+    const agentNodesData = [
+      { angle: 0, color: 0xfbbf24, zh: "① GOALS & PLANNING", zhSub: "长程目标分解与设定边界", en: "① GOALS & PLANNING", enSub: "Decomposes goal & sets boundary" },
+      { angle: Math.PI * 0.5, color: 0x38bdf8, zh: "② MEMORY STREAM", zhSub: "检索状态并累积上下文环", en: "② MEMORY BUFFER", enSub: "Retrieves state & context rings" },
+      { angle: Math.PI, color: 0x2dd4bf, zh: "③ TOOL EXECUTION", zhSub: "调用外部工具并注入观测", en: "③ TOOL EXECUTION", enSub: "Calls external APIs & actuators" },
+      { angle: Math.PI * 1.5, color: 0xa78bfa, zh: "④ FEEDBACK & CRITIQUE", zhSub: "评估采样输出并重设提示", en: "④ FEEDBACK & CRITIQUE", enSub: "Evaluates trajectory & reframes" }
+    ];
+
+    const agentNodes = [];
+    const verticalBeams = [];
+    const latentAgentRings = [];
+
+    agentNodesData.forEach((nd, idx) => {
+      const nodeGroup = new THREE.Group();
+      const nx = Math.cos(nd.angle) * 9.6;
+      const nz = Math.sin(nd.angle) * 9.6;
+      nodeGroup.position.set(nx, 0, nz);
+
+      const coreMat = new THREE.MeshBasicMaterial({ color: nd.color, wireframe: true, transparent: true, opacity: 0 });
+      const coreMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.92, 1), coreMat);
+      nodeGroup.add(coreMesh);
+
+      const haloMat = new THREE.MeshBasicMaterial({ color: nd.color, side: THREE.DoubleSide, transparent: true, opacity: 0, blending: THREE.AdditiveBlending });
+      nodeGroup.add(new THREE.Mesh(new THREE.RingGeometry(1.15, 1.48, 32).rotateX(Math.PI / 2), haloMat));
+
+      const spokeMat = new THREE.LineBasicMaterial({ color: nd.color, transparent: true, opacity: 0 });
+      agentGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(nx, 0, nz)]), spokeMat));
+
+      agentGroup.add(nodeGroup);
+      agentNodes.push({ group: nodeGroup, coreMesh, coreMat, haloMat, spokeMat, data: nd });
+
+      const beamMat = new THREE.MeshBasicMaterial({
+        color: nd.color, transparent: true, opacity: 0, side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending, depthWrite: false
+      });
+      const beamMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.68, 1, 24, 1, true), beamMat);
+      scene.add(beamMesh);
+
+      const impactMat = new THREE.MeshBasicMaterial({
+        color: nd.color, side: THREE.DoubleSide, transparent: true, opacity: 0,
+        blending: THREE.AdditiveBlending, depthWrite: false
+      });
+      const impactRing = new THREE.Mesh(new THREE.RingGeometry(0.45, 2.05, 48).rotateX(-Math.PI / 2), impactMat);
+      scene.add(impactRing);
+
+      const latentMat = new THREE.MeshBasicMaterial({
+        color: 0xfde68a, wireframe: true, transparent: true, opacity: 0, blending: THREE.AdditiveBlending
+      });
+      const latentMesh = new THREE.Mesh(new THREE.TorusKnotGeometry(1.1, 0.18, 48, 8), latentMat);
+      scene.add(latentMesh);
+      latentAgentRings.push({ mesh: latentMesh, mat: latentMat });
+
+      verticalBeams.push({ beamMesh, beamMat, impactRing, impactMat, nd, idx, currentTop: new THREE.Vector3(), currentBot: new THREE.Vector3() });
+    });
+
+    const packetCount = 140;
+    const packetGeo = new THREE.BufferGeometry();
+    const packetPos = new Float32Array(packetCount * 3);
+    const packetCol = new Float32Array(packetCount * 3);
+    const packets = [];
+    for (let i = 0; i < packetCount; i++) {
+      packets.push({
+        beamIdx: i % 4,
+        isDownward: i % 2 === 0,
+        phase: Math.random(),
+        speed: 0.45 + Math.random() * 0.35,
+        jitter: (Math.random() - 0.5) * 0.45
+      });
+    }
+    packetGeo.setAttribute('position', new THREE.BufferAttribute(packetPos, 3));
+    packetGeo.setAttribute('color', new THREE.BufferAttribute(packetCol, 3));
+    const packetMat = new THREE.PointsMaterial({
+      size: 0.42, vertexColors: true, transparent: true, opacity: 0,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    scene.add(new THREE.Points(packetGeo, packetMat));
+
+    // Human-Field Co-Construction Double Helix (Sec 8)
+    const helixCount = 340;
+    const helixGeo = new THREE.BufferGeometry();
+    const helixPos = new Float32Array(helixCount * 3);
+    const helixCol = new Float32Array(helixCount * 3);
+    helixGeo.setAttribute('position', new THREE.BufferAttribute(helixPos, 3));
+    helixGeo.setAttribute('color', new THREE.BufferAttribute(helixCol, 3));
+    const helixMat = new THREE.PointsMaterial({
+      size: 0.44, vertexColors: true, transparent: true, opacity: 0,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    scene.add(new THREE.Points(helixGeo, helixMat));
+
+    const humanOrbMat = new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0 });
+    const humanOrb = new THREE.Mesh(new THREE.SphereGeometry(1.15, 32, 32), humanOrbMat);
+    humanOrb.position.set(-16, 4.5, 0);
+    scene.add(humanOrb);
+
+    // ============================================================================
+    // 5. BILINGUAL 3D FLOATING LABELS
+    // ============================================================================
+    const allTags = [];
+    function makeTag(zhT, zhS, enT, enS, cls, pos) {
+      const div = document.createElement('div');
+      div.className = `scene-tag ${cls}`;
+      div.style.opacity = '0';
+      const obj = new CSS2DObject(div);
+      obj.position.copy(pos);
+      scene.add(obj);
+      const t = { div, obj, zhT, zhS, enT, enS };
+      allTags.push(t);
+      return t;
+    }
+
+    const tags = {
+      p1Person: makeTag("① 拟人化「盒中小人」幻觉", "投射固定信念、性格与内在意图 (§1)", "① ANTHROPOMORPHIC HOMUNCULUS", "Projects fixed beliefs & unitary mind (§1)", "rose", new THREE.Vector3(0, 9.4, 0)),
+      p1Masks: makeTag("② 离散角色面具环 (Role-Play)", "Shanahan (2023) · 6 张离散角色卡片 (§2)", "② DISCRETE ROLE-PLAY MASKS", "Shanahan (2023) · Carousel of characters (§2)", "gold", new THREE.Vector3(0, 9.4, 0)),
+      p1Field: makeTag("③ 连续高维智能场 (Intelligence Field)", "不同角色是同一个连续场的本征激发模态 (§3)", "③ CONTINUOUS INTELLIGENCE FIELD", "Roles are continuous modes of one field (§3)", "cyan", new THREE.Vector3(0, 3.8, 0)),
+
+      p2Pretrain: makeTag("阶段 B · 预训练基础地貌", "高频语言模式与自然推理河床 (§4)", "STAGE B · PRETRAINING TOPOGRAPHY", "Natural linguistic & reasoning valleys (§4)", "cyan", new THREE.Vector3(-12, 2.5, -5.5)),
+      p2Valley: makeTag("阶段 C · RLHF 默认助手深谷", "Helpful / Harmless 强吸引子河床 (§4, §5.2)", "STAGE C · RLHF ASSISTANT VALLEY", "Deep 'Helpful Assistant' riverbed (§4, §5.2)", "teal", new THREE.Vector3(-1.5, -3.5, 0.5)),
+      p2Wall: makeTag("阶段 D · RLHF 安全拒绝高墙", "难以被普通 Prompt 掰弯的高势能壁垒", "STAGE D · ALIGNMENT REFUSAL WALL", "High-potential barrier carved by RLHF", "rose", new THREE.Vector3(5.5, 8.2, 7.2)),
+
+      p3Forceful: makeTag("P2 逆地形强推高墙 (Opposed)", "加大命令音量仍撞墙受阻并高方差散射", "P2 FORCEFUL PUSH UPHILL", "Diminishing returns against terrain gravity", "rose", new THREE.Vector3(4.5, 5.2, 4.8)),
+      p3Survey: makeTag("Survey Before You Push (顺谷路径)", "声呐勘测 + 重构角色与多轮上下文环 (§5.3, §6)", "SURVEY BEFORE YOU PUSH", "Reframed boundary + context rings (§5.3, §6)", "gold", new THREE.Vector3(-5.5, -1.8, -5.5)),
+
+      p4Level2: makeTag("LEVEL 2 · 顶层 AI AGENT (闭环行动与控制系统)", "架设在智能场之上的 Goals · Memory · Tools · Feedback (§7)", "LEVEL 2 · AI AGENT (CONTROL SYSTEM ATOP FIELD)", "Goals · Memory · Tool Use · Closed-Loop Action (§7)", "gold", new THREE.Vector3(0, 14.5, 0)),
+      p4Level1: makeTag("LEVEL 1 · 底层 BASE LLM (各向异性智能场)", "无状态高维响应场，受顶层边界光束反复激发 (§7)", "LEVEL 1 · BASE LLM (ANISOTROPIC INTELLIGENCE FIELD)", "Stateless response terrain excited by boundary beams (§7)", "cyan", new THREE.Vector3(0, -5.2, 8.5)),
+      node0: makeTag(agentNodesData[0].zh, agentNodesData[0].zhSub, agentNodesData[0].en, agentNodesData[0].enSub, "gold", new THREE.Vector3()),
+      node1: makeTag(agentNodesData[1].zh, agentNodesData[1].zhSub, agentNodesData[1].en, agentNodesData[1].enSub, "cyan", new THREE.Vector3()),
+      node2: makeTag(agentNodesData[2].zh, agentNodesData[2].zhSub, agentNodesData[2].en, agentNodesData[2].enSub, "teal", new THREE.Vector3()),
+      node3: makeTag(agentNodesData[3].zh, agentNodesData[3].zhSub, agentNodesData[3].en, agentNodesData[3].enSub, "violet", new THREE.Vector3()),
+      humanTag: makeTag("人类协同者 + 双螺旋认知共振 (§8)", "提问 ➔ 场激发 ➔ 约束校准 ➔ 场收敛", "HUMAN–FIELD CO-CONSTRUCTION (§8)", "Question ➔ Excitation ➔ Constraint ➔ Convergence", "gold", new THREE.Vector3(-15, 6.8, 0))
+    };
+
+    function refreshSceneTagsText() {
+      allTags.forEach(t => {
+        const title = lang === 'zh' ? t.zhT : t.enT;
+        const sub = lang === 'zh' ? t.zhS : t.enS;
+        t.div.innerHTML = `<strong>${title}</strong>${sub ? `<span class="sub">${sub}</span>` : ''}`;
+      });
+    }
+    function setTagOpacity(t, val) {
+      t.div.style.opacity = Math.max(0, Math.min(1, val)).toFixed(2);
+    }
+
+    // ============================================================================
+    // 6. PILLAR-SPECIFIC WORKBENCH UI & EMPIRICAL GAUGES
+    // ============================================================================
+    const pillarListEl = document.getElementById('pillar-list');
+    const specificCtrlEl = document.getElementById('pillar-specific-controls');
+
+    function renderPillarNav() {
+      pillarListEl.innerHTML = '';
+      PILLARS.forEach((p, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `pillar-btn ${state.pillar === idx ? 'active' : ''}`;
+        btn.innerHTML = `
+          <span class="pillar-badge">${p.badge}</span>
+          <div class="pillar-text">
+            <div class="pillar-title">${lang === 'zh' ? p.zhTitle : p.enTitle}</div>
+            <div class="pillar-sub">${p.sub}</div>
+          </div>
+        `;
+        btn.onclick = () => selectPillar(idx, true);
+        pillarListEl.appendChild(btn);
+      });
+    }
+
+    function renderPillarWorkbench() {
+      const p = state.pillar;
+
+      if (p === 0) {
+        // PILLAR 1 WORKBENCH: Metaphor Contrast (Person vs. Discrete Masks vs. Continuous Field)
+        specificCtrlEl.innerHTML = `
+          <div class="block-title">
+            <span>${lang === 'zh' ? 'PILLAR 1 · 三种存在隐喻切换对比 (§1–3)' : 'PILLAR 1 · COMPARE 3 METAPHORS (§1–3)'}</span>
+          </div>
+          <div class="btn-grid single">
+            <button class="lab-btn rose ${state.p1Framing === 'person' ? 'active' : ''}" id="p1-person">
+              <span>👤 ${lang === 'zh' ? '① 拟人化「盒中小人」 (Unitary Person, §1)' : '① Unitary Person / Homunculus (§1)'}</span>
+              <span>Morph 0%</span>
+            </button>
+            <button class="lab-btn gold ${state.p1Framing === 'masks' ? 'active' : ''}" id="p1-masks">
+              <span>🎭 ${lang === 'zh' ? '② 离散角色面具环 (Shanahan Masks, §2)' : '② Discrete Role-Play Masks (§2)'}</span>
+              <span>Morph 45%</span>
+            </button>
+            <button class="lab-btn teal ${state.p1Framing === 'field' ? 'active' : ''}" id="p1-field">
+              <span>🌊 ${lang === 'zh' ? '③ 连续高维智能场 (Intelligence Field, §3 ★)' : '③ Continuous Intelligence Field (§3 ★)'}</span>
+              <span>Morph 100%</span>
+            </button>
+          </div>
+
+          <div class="block-title" style="margin-top:6px;">
+            <span>${lang === 'zh' ? '连续场模态激发与线性叠加测试 (§3 Continuity)' : 'CONTINUOUS MODE EXCITATION & BLENDING (§3)'}</span>
+          </div>
+          <div class="btn-grid">
+            <button class="lab-btn ${state.p1ExciteMode === 'teacher' ? 'active' : ''}" data-excite="teacher">
+              <span>📐 ${lang === 'zh' ? '数学老师模态' : 'Math Teacher'}</span>
+            </button>
+            <button class="lab-btn ${state.p1ExciteMode === 'reviewer' ? 'active' : ''}" data-excite="reviewer">
+              <span>🔍 ${lang === 'zh' ? '严苛审稿人模态' : 'Strict Reviewer'}</span>
+            </button>
+            <button class="lab-btn ${state.p1ExciteMode === 'poet' ? 'active' : ''}" data-excite="poet">
+              <span>✨ ${lang === 'zh' ? '浪漫诗人模态' : 'Lyrical Poet'}</span>
+            </button>
+            <button class="lab-btn gold ${state.p1ExciteMode === 'blend' ? 'active' : ''}" data-excite="blend">
+              <span>🌈 ${lang === 'zh' ? '多模态连续叠加!' : 'Superposition!'}</span>
+            </button>
+          </div>
+        `;
+        document.getElementById('p1-person').onclick = () => {
+          stopAutoDemo(); state.p1Framing = 'person'; setSlider('morph', 0.0); renderPillarWorkbench(); updateGauges();
+        };
+        document.getElementById('p1-masks').onclick = () => {
+          stopAutoDemo(); state.p1Framing = 'masks'; setSlider('morph', 0.45); renderPillarWorkbench(); updateGauges();
+        };
+        document.getElementById('p1-field').onclick = () => {
+          stopAutoDemo(); state.p1Framing = 'field'; setSlider('morph', 1.0); renderPillarWorkbench(); updateGauges();
+        };
+        specificCtrlEl.querySelectorAll('[data-excite]').forEach(btn => {
+          btn.onclick = () => {
+            stopAutoDemo();
+            state.p1ExciteMode = btn.dataset.excite;
+            state.p1Framing = 'field';
+            setSlider('morph', 1.0);
+            triggerModeExcitation(state.p1ExciteMode);
+            renderPillarWorkbench();
+            updateGauges();
+          };
+        });
+      } else if (p === 1) {
+        // PILLAR 2 WORKBENCH: 4-Stage Anisotropic Terrain Sculptor (Sec 4 & 5.2)
+        specificCtrlEl.innerHTML = `
+          <div class="block-title">
+            <span>${lang === 'zh' ? 'PILLAR 2 · 四阶各向异性地形雕刻 (§4 & §5.2)' : 'PILLAR 2 · 4-STAGE TERRAIN SCULPTING (§4 & §5.2)'}</span>
+          </div>
+          <div class="btn-grid single">
+            <button class="lab-btn ${state.p2Stage === 'stageA' ? 'active' : ''}" id="p2-a">
+              <span>📄 ${lang === 'zh' ? '阶段 A：平坦无偏中立场 (Flat Neutral Sheet)' : 'Stage A: Flat Uniform Sheet'}</span>
+              <span>0.0 / 0.0</span>
+            </button>
+            <button class="lab-btn ${state.p2Stage === 'stageB' ? 'active' : ''}" id="p2-b">
+              <span>🏞️ ${lang === 'zh' ? '阶段 B：预训练自然语言地貌 (Pretraining)' : 'Stage B: Pretraining Valleys Only'}</span>
+              <span>1.1 / 0.0</span>
+            </button>
+            <button class="lab-btn teal ${state.p2Stage === 'stageC' ? 'active' : ''}" id="p2-c">
+              <span>🌊 ${lang === 'zh' ? '阶段 C：雕刻 RLHF 默认助手深谷 (Helpful Valley)' : 'Stage C: + RLHF Assistant Riverbed'}</span>
+              <span>1.0 / 1.1</span>
+            </button>
+            <button class="lab-btn rose ${state.p2Stage === 'stageD' ? 'active' : ''}" id="p2-d">
+              <span>⛰️ ${lang === 'zh' ? '阶段 D：筑起 RLHF 安全拒绝高墙 (Refusal Walls)' : 'Stage D: + Steep Safety Refusal Walls'}</span>
+              <span>1.0 / 1.35</span>
+            </button>
+          </div>
+          <div class="btn-grid" style="margin-top:4px;">
+            <button class="lab-btn gold" id="p2-rain">
+              <span>🌧️ ${lang === 'zh' ? '倾泻 260 颗重力测试粒子' : 'Drop 260 Gravity Particles'}</span>
+            </button>
+            <button class="lab-btn ${state.p2ShowContours ? 'active' : ''}" id="p2-contour">
+              <span>🗺️ ${lang === 'zh' ? '地形等高线高亮' : 'Iso-Contour Glow'}</span>
+            </button>
+          </div>
+        `;
+        document.getElementById('p2-a').onclick = () => applyP2Stage('stageA', true);
+        document.getElementById('p2-b').onclick = () => applyP2Stage('stageB', true);
+        document.getElementById('p2-c').onclick = () => applyP2Stage('stageC', true);
+        document.getElementById('p2-d').onclick = () => applyP2Stage('stageD', true);
+        document.getElementById('p2-rain').onclick = () => {
+          physParticles.forEach(pt => {
+            pt.x = (Math.random() - 0.5) * 42;
+            pt.z = (Math.random() - 0.5) * 30;
+            pt.vx = 0; pt.vz = 0; pt.life = 0; pt.userSpawned = true;
+          });
+        };
+        document.getElementById('p2-contour').onclick = () => {
+          state.p2ShowContours = !state.p2ShowContours;
+          renderPillarWorkbench();
+        };
+      } else if (p === 2) {
+        // PILLAR 3 WORKBENCH: Survey Before You Push & Predictions P1, P2, P3
+        specificCtrlEl.innerHTML = `
+          <div class="block-title">
+            <span>${lang === 'zh' ? 'PILLAR 3 · 三大可证伪预测实验台 (§6 P1–P3)' : 'PILLAR 3 · FALSIFIABLE PREDICTIONS LAB (§6)'}</span>
+          </div>
+          <div class="btn-grid">
+            <button class="lab-btn ${state.p3Experiment === 'P1' ? 'active' : ''}" id="exp-p1">
+              <span>📊 ${lang === 'zh' ? '预测 P1: 顺/逆谷方差' : 'P1: Variance Test'}</span>
+            </button>
+            <button class="lab-btn gold ${state.p3Experiment === 'P2' ? 'active' : ''}" id="exp-p2">
+              <span>🧭 ${lang === 'zh' ? '预测 P2: 勘测 vs 强推' : 'P2: Survey vs Push'}</span>
+            </button>
+          </div>
+          <div class="btn-grid single">
+            <button class="lab-btn teal ${state.p3Experiment === 'P3' ? 'active' : ''}" id="exp-p3">
+              <span>🔄 ${lang === 'zh' ? '预测 P3: 跨模型地形相似度迁移测试' : 'P3: Cross-Model Terrain Transfer'}</span>
+              <span>${state.p3TransferModel === 'shared' ? 'Shared Terrain' : 'Divergent'}</span>
+            </button>
+          </div>
+
+          <div class="slider-row" style="margin-top:4px;">
+            <div class="slider-head">
+              <span>${lang === 'zh' ? 'P2 强硬指令音量 (Command Volume 1x➔10x)' : 'P2 Forceful Command Volume (1x➔10x)'}</span>
+              <span class="slider-val" style="color:var(--rose);">${state.p3ForceVolume.toFixed(1)}x</span>
+            </div>
+            <input type="range" id="slider-force-vol" min="1" max="10" step="0.5" value="${state.p3ForceVolume}" />
+          </div>
+
+          <div class="btn-grid">
+            <button class="lab-btn rose ${state.p3Strategy === 'forceful' ? 'active' : ''}" id="strat-force">
+              <span>💥 ${lang === 'zh' ? '只看逆势强推高墙' : 'Forceful Only'}</span>
+            </button>
+            <button class="lab-btn gold ${state.p3Strategy === 'surveyed' ? 'active' : ''}" id="strat-survey">
+              <span>📡 ${lang === 'zh' ? '只看声呐勘测顺谷' : 'Surveyed Only'}</span>
+            </button>
+          </div>
+          <div class="btn-grid single">
+            <button class="lab-btn ${state.p3Strategy === 'both' ? 'active' : ''}" id="strat-both">
+              <span>⚖️ ${lang === 'zh' ? '同屏对比：强推受阻 vs. 勘测顺谷 + 多轮上下文环' : 'Compare Both Strategies Side-by-Side'}</span>
+            </button>
+          </div>
+        `;
+        document.getElementById('exp-p1').onclick = () => { stopAutoDemo(); state.p3Experiment = 'P1'; state.p3Strategy = 'both'; renderPillarWorkbench(); updateGauges(); };
+        document.getElementById('exp-p2').onclick = () => { stopAutoDemo(); state.p3Experiment = 'P2'; renderPillarWorkbench(); updateGauges(); };
+        document.getElementById('exp-p3').onclick = () => {
+          stopAutoDemo();
+          state.p3Experiment = 'P3';
+          state.p3TransferModel = state.p3TransferModel === 'shared' ? 'divergent' : 'shared';
+          renderPillarWorkbench();
+          updateGauges();
+        };
+        document.getElementById('slider-force-vol').oninput = (e) => {
+          stopAutoDemo();
+          state.p3ForceVolume = parseFloat(e.target.value);
+          renderPillarWorkbench();
+          updateGauges();
+        };
+        document.getElementById('strat-force').onclick = () => { stopAutoDemo(); state.p3Strategy = 'forceful'; renderPillarWorkbench(); updateGauges(); };
+        document.getElementById('strat-survey').onclick = () => { stopAutoDemo(); state.p3Strategy = 'surveyed'; renderPillarWorkbench(); updateGauges(); };
+        document.getElementById('strat-both').onclick = () => { stopAutoDemo(); state.p3Strategy = 'both'; renderPillarWorkbench(); updateGauges(); };
+      } else {
+        // PILLAR 4 WORKBENCH: Dual-Layer Architecture (Base LLM Field + Upper Agent Control Ring + Human Helix)
+        specificCtrlEl.innerHTML = `
+          <div class="block-title">
+            <span>${lang === 'zh' ? 'PILLAR 4 · 双层架构与人–场共振 (§7–8)' : 'PILLAR 4 · DUAL-LAYER & CO-CONSTRUCTION (§7–8)'}</span>
+          </div>
+          <div class="btn-grid">
+            <button class="lab-btn gold ${state.p4ArchView === 'coupled' ? 'active' : ''}" id="p4-coupled">
+              <span>🔗 ${lang === 'zh' ? '双层耦合全貌 (§7)' : 'Coupled 2-Layer'}</span>
+            </button>
+            <button class="lab-btn teal ${state.p4ArchView === 'human_tri' ? 'active' : ''}" id="p4-tri">
+              <span>🧬 ${lang === 'zh' ? '+ 人–场双螺旋 (§8)' : '+ Human Helix (§8)'}</span>
+            </button>
+            <button class="lab-btn ${state.p4ArchView === 'latent' ? 'active' : ''}" id="p4-latent">
+              <span>🧠 ${lang === 'zh' ? '场内潜藏 Agent' : 'Latent Models'}</span>
+            </button>
+            <button class="lab-btn ${state.p4ArchView === 'field_only' ? 'active' : ''}" id="p4-field">
+              <span>🌊 ${lang === 'zh' ? '仅看底层智能场' : 'Base Field Only'}</span>
+            </button>
+          </div>
+
+          <div class="block-title" style="margin-top:6px;">
+            <span>${lang === 'zh' ? '点击触发顶层 AGENT 子系统向底层场发射边界光束' : 'FIRE AGENT SUBSYSTEM BOUNDARY BEAM'}</span>
+          </div>
+          <div class="btn-grid">
+            <button class="lab-btn gold ${state.p4ActiveNode === 0 ? 'active' : ''}" data-node="0">
+              <span>① ${lang === 'zh' ? 'Goals 目标分解' : '① Goals & Plan'}</span>
+            </button>
+            <button class="lab-btn ${state.p4ActiveNode === 1 ? 'active' : ''}" data-node="1">
+              <span>② ${lang === 'zh' ? 'Memory 记忆环' : '② Memory Stream'}</span>
+            </button>
+            <button class="lab-btn teal ${state.p4ActiveNode === 2 ? 'active' : ''}" data-node="2">
+              <span>③ ${lang === 'zh' ? 'Tools 工具调用' : '③ Tool Execution'}</span>
+            </button>
+            <button class="lab-btn ${state.p4ActiveNode === 3 ? 'active' : ''}" data-node="3">
+              <span>④ ${lang === 'zh' ? 'Critique 反思纠错' : '④ Critique Loop'}</span>
+            </button>
+          </div>
+
+          <div class="slider-row" style="margin-top:4px;">
+            <div class="slider-head">
+              <span>${lang === 'zh' ? 'Level 1 与 Level 2 垂直层间距离' : 'Level 1–2 Vertical Separation'}</span>
+              <span class="slider-val">${state.separation.toFixed(1)}</span>
+            </div>
+            <input type="range" id="slider-sep-p4" min="5.5" max="15.0" step="0.2" value="${state.separation}" />
+          </div>
+        `;
+        document.getElementById('p4-coupled').onclick = () => { stopAutoDemo(); state.p4ArchView = 'coupled'; renderPillarWorkbench(); updateGauges(); };
+        document.getElementById('p4-tri').onclick = () => { stopAutoDemo(); state.p4ArchView = 'human_tri'; renderPillarWorkbench(); updateGauges(); };
+        document.getElementById('p4-latent').onclick = () => { stopAutoDemo(); state.p4ArchView = 'latent'; renderPillarWorkbench(); updateGauges(); };
+        document.getElementById('p4-field').onclick = () => { stopAutoDemo(); state.p4ArchView = 'field_only'; renderPillarWorkbench(); updateGauges(); };
+        specificCtrlEl.querySelectorAll('[data-node]').forEach(btn => {
+          btn.onclick = () => {
+            stopAutoDemo();
+            state.p4ActiveNode = parseInt(btn.dataset.node, 10);
+            const bot = verticalBeams[state.p4ActiveNode].currentBot;
+            spawnExcitationAt(bot.x, bot.z, agentNodesData[state.p4ActiveNode].color);
+            cosmicAudio.playAgentCycleStep(state.p4ActiveNode);
+            renderPillarWorkbench();
+            updateGauges();
+          };
+        });
+        document.getElementById('slider-sep-p4').oninput = (e) => {
+          state.separation = parseFloat(e.target.value);
+          renderPillarWorkbench();
+        };
+      }
+    }
+
+    function triggerModeExcitation(mode) {
+      if (mode === 'teacher') {
+        spawnExcitationAt(-8.5, -2.0, 0x38bdf8);
+      } else if (mode === 'reviewer') {
+        spawnExcitationAt(5.0, -6.5, 0xfbbf24);
+      } else if (mode === 'poet') {
+        spawnExcitationAt(-3.5, 5.5, 0xa78bfa);
+      } else {
+        // Superposition: excite 3 modes simultaneously so their waves interfere continuously!
+        spawnExcitationAt(-8.5, -2.0, 0x38bdf8);
+        spawnExcitationAt(5.0, -6.5, 0xfbbf24);
+        spawnExcitationAt(-3.5, 5.5, 0x2dd4bf);
+      }
+    }
+
+    function applyP2Stage(stage, userClicked = false) {
+      if (userClicked) stopAutoDemo();
+      state.p2Stage = stage;
+      setSlider('morph', 1.0);
+      if (stage === 'stageA') {
+        setSlider('pretrain', 0.0); setSlider('rlhf', 0.0);
+        cosmicAudio.playChordBloom([220, 329.63, 440], 0.05);
+      } else if (stage === 'stageB') {
+        setSlider('pretrain', 1.15); setSlider('rlhf', 0.0);
+        cosmicAudio.playChordBloom([220, 277.18, 329.63, 493.88], 0.06);
+      } else if (stage === 'stageC') {
+        setSlider('pretrain', 1.0); setSlider('rlhf', 1.1);
+        cosmicAudio.playChordBloom([164.81, 246.94, 329.63, 369.99, 493.88], 0.07);
+      } else {
+        setSlider('pretrain', 1.0); setSlider('rlhf', 1.35);
+        cosmicAudio.playChordBloom([110, 220, 311.13, 440, 622.25], 0.08);
+      }
+      renderPillarWorkbench();
+      updateGauges();
+    }
+
+    function updateGauges() {
+      const g1Val = document.getElementById('g1-val');
+      const g1Bar = document.getElementById('g1-bar');
+      const g2Val = document.getElementById('g2-val');
+      const g2Bar = document.getElementById('g2-bar');
+      const g3Val = document.getElementById('g3-val');
+      const g3Bar = document.getElementById('g3-bar');
+
+      const contPct = Math.round(state.morph * 100);
+      g1Val.textContent = `${contPct}% (${contPct < 20 ? 'Discrete Person' : contPct < 70 ? 'Role Masks' : 'Continuous Field'})`;
+      g1Bar.style.width = `${Math.max(8, contPct)}%`;
+
+      let stabilityPct = Math.round(Math.max(12, Math.min(98, 95 - state.temp * 32)));
+      let reachPct = 94;
+
+      if (state.pillar === 2) {
+        if (state.p3Strategy === 'forceful') {
+          stabilityPct = Math.max(10, Math.round(35 - state.p3ForceVolume * 2.2));
+          // Diminishing returns formula for P2: even at 10x volume, reach rate caps at ~19%!
+          reachPct = Math.round(12 + 8 * (1 - Math.exp(-state.p3ForceVolume * 0.35)));
+          g3Val.textContent = `${reachPct}% (P2 Stalled at Wall)`;
+          g3Bar.style.background = 'var(--rose)';
+        } else if (state.p3Experiment === 'P3' && state.p3TransferModel === 'divergent') {
+          stabilityPct = 38;
+          reachPct = 31;
+          g3Val.textContent = `${reachPct}% (P3 Divergent Terrain)`;
+          g3Bar.style.background = 'var(--rose)';
+        } else {
+          g3Val.textContent = `${reachPct}% (Valley-Aligned)`;
+          g3Bar.style.background = 'var(--gold)';
+        }
+      } else {
+        g3Val.textContent = `${reachPct}% (Active Excitation)`;
+        g3Bar.style.background = 'var(--gold)';
+      }
+
+      g2Val.textContent = `${stabilityPct}% (σ²=${((100 - stabilityPct) / 45).toFixed(2)})`;
+      g2Bar.style.width = `${stabilityPct}%`;
+      g3Bar.style.width = `${reachPct}%`;
+    }
+
+    function setSlider(key, val) {
+      state[key] = val;
+      const el = document.getElementById(`slider-${key}`);
+      if (el) el.value = val;
+      const vEl = document.getElementById(`val-${key}`);
+      if (vEl) vEl.textContent = key === 'morph' ? `${Math.round(val * 100)}%` : Number(val).toFixed(2);
+      updateGauges();
+    }
+
+    ['morph', 'pretrain', 'rlhf', 'temp'].forEach(k => {
+      document.getElementById(`slider-${k}`).addEventListener('input', (e) => {
+        stopAutoDemo();
+        setSlider(k, parseFloat(e.target.value));
+      });
+    });
+
+    function selectPillar(idx, resetAutoDemo = false) {
+      state.pillar = idx;
+      state.demoTimer = 0;
+      const p = PILLARS[idx];
+
+      state.desiredCamPos.set(...p.camPos);
+      state.desiredCamLook.set(...p.camLook);
+      state.camTransitioning = true;
+
+      if (idx === 0) {
+        state.p1Framing = 'field';
+        setSlider('morph', 1.0); setSlider('pretrain', 0.8); setSlider('rlhf', 0.5);
+      } else if (idx === 1) {
+        applyP2Stage('stageD', false);
+      } else if (idx === 2) {
+        setSlider('morph', 1.0); setSlider('pretrain', 1.0); setSlider('rlhf', 1.15);
+      } else if (idx === 3) {
+        setSlider('morph', 1.0); setSlider('pretrain', 1.0); setSlider('rlhf', 1.05);
+      }
+
+      if (resetAutoDemo) {
+        const chordSets = [
+          [220, 277.18, 329.63, 415.30],
+          [164.81, 246.94, 329.63, 493.88],
+          [246.94, 311.13, 369.99, 554.37],
+          [220, 329.63, 440, 554.37, 659.25]
+        ];
+        cosmicAudio.playChordBloom(chordSets[idx] || chordSets[0], 0.075);
+      }
+
+      updateAllText();
+    }
+
+    function stopAutoDemo() {
+      state.autoDemo = false;
+      const btn = document.getElementById('btn-auto-demo');
+      btn.classList.remove('running');
+      btn.textContent = lang === 'zh' ? '⏸ 手动沙盒模式 (点击恢复自动演示)' : '⏸ Manual Mode (Click for Auto-Demo)';
+    }
+
+    document.getElementById('btn-auto-demo').onclick = () => {
+      state.autoDemo = !state.autoDemo;
+      const btn = document.getElementById('btn-auto-demo');
+      btn.classList.toggle('running', state.autoDemo);
+      btn.textContent = state.autoDemo
+        ? (lang === 'zh' ? '▶ 自动演示中 (Auto-Demo)' : '▶ Auto-Demo Running')
+        : (lang === 'zh' ? '⏸ 手动沙盒模式 (Manual)' : '⏸ Manual Sandbox');
+    };
+
+    function updateAllText() {
+      const p = PILLARS[state.pillar];
+      cosmicAudio.refreshButtonsUI();
+
+      document.getElementById('theory-eyebrow').textContent = p.eyebrow;
+      document.getElementById('theory-heading').textContent = lang === 'zh' ? p.zhHeading : p.enHeading;
+      document.getElementById('theory-desc').innerHTML = (lang === 'zh' ? p.zhDesc : p.enDesc).replace(/\n/g, '<br>');
+      document.getElementById('theory-quote').textContent = p.quote;
+      document.getElementById('theory-tip').textContent = lang === 'zh' ? p.zhTip : p.enTip;
+
+      const legendBox = document.getElementById('legend-box');
+      legendBox.innerHTML = p.legend.map(item => `
+        <div class="legend-row">
+          <span class="swatch" style="background:${item.color}; box-shadow:0 0 8px ${item.color};"></span>
+          <span>${lang === 'zh' ? item.zh : item.en}</span>
+        </div>
+      `).join('');
+
+      renderPillarNav();
+      renderPillarWorkbench();
+      refreshSceneTagsText();
+      updateGauges();
+    }
+
+    document.getElementById('btn-hide-ui').onclick = () => document.body.classList.toggle('hide-panels');
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'h' || e.key === 'H') document.body.classList.toggle('hide-panels');
+    });
+    renderer.domElement.addEventListener('pointerdown', () => { state.camTransitioning = false; });
+
+    // ============================================================================
+    // 7. MAIN ANIMATION & REAL-TIME PHYSICS LOOP
+    // ============================================================================
+    let lastTime = performance.now();
+    const tempColor = new THREE.Color();
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+      const timeSec = now * 0.0012;
+
+      if (state.camTransitioning) {
+        camera.position.lerp(state.desiredCamPos, 0.06);
+        controls.target.lerp(state.desiredCamLook, 0.06);
+        if (camera.position.distanceTo(state.desiredCamPos) < 0.15) state.camTransitioning = false;
+      }
+      controls.update();
+
+      // ------------------------------------------------------------------------
+      // AUTO-DEMO CHOREOGRAPHY INSIDE EACH PILLAR
+      // ------------------------------------------------------------------------
+      if (state.autoDemo) {
+        state.demoTimer += dt;
+        if (state.pillar === 0) {
+          // Smoothly cycle Person (0..4s) -> Discrete Masks (4..8s) -> Continuous Field + Superposition (8..15s)
+          const cycle = state.demoTimer % 15.0;
+          if (cycle < 4.0) {
+            state.p1Framing = 'person';
+            setSlider('morph', THREE.MathUtils.lerp(state.morph, 0.0, 0.05));
+          } else if (cycle < 8.5) {
+            state.p1Framing = 'masks';
+            setSlider('morph', THREE.MathUtils.lerp(state.morph, 0.45, 0.05));
+          } else {
+            state.p1Framing = 'field';
+            setSlider('morph', THREE.MathUtils.lerp(state.morph, 1.0, 0.05));
+            if (Math.floor((cycle - dt) * 0.8) !== Math.floor(cycle * 0.8)) {
+              triggerModeExcitation('blend');
+            }
+          }
+        } else if (state.pillar === 1) {
+          // Cycle through Terraforming Stages A -> B -> C -> D every 4 seconds
+          const stIdx = Math.floor((state.demoTimer % 16.0) / 4.0);
+          const stages = ['stageA', 'stageB', 'stageC', 'stageD'];
+          if (state.p2Stage !== stages[stIdx]) {
+            applyP2Stage(stages[stIdx], false);
+          }
+        } else if (state.pillar === 3) {
+          // Advance active Agent Subsystem node every 2.4s
+          state.p4LoopAngle = (state.p4LoopAngle + dt * 0.65) % (Math.PI * 2);
+          const newNode = Math.floor(((state.p4LoopAngle / (Math.PI * 2)) * 4)) % 4;
+          if (newNode !== state.p4ActiveNode) {
+            state.p4ActiveNode = newNode;
+            cosmicAudio.playAgentCycleStep(newNode);
+            renderPillarWorkbench();
+          }
+        }
+      }
+
+      // Update continuous physics-coupled cosmic soundscape parameters
+      cosmicAudio.updateContinuous(
+        state.morph,
+        state.rlhf,
+        state.temp,
+        state.pillar === 2 && state.p3Strategy === 'forceful',
+        state.p3ForceVolume
+      );
+
+      // ------------------------------------------------------------------------
+      // A. UPDATE PILLAR 1 3-STATE MORPH (PERSON <-> 6 MASKS <-> CONTINUOUS FIELD)
+      // ------------------------------------------------------------------------
+      const m = state.morph;
+      homunculusWire.rotation.y = now * 0.0005;
+      homunculusWire.material.opacity = Math.max(0, 1 - m * 2.2) * 0.36;
+
+      // Discrete 6 Mask Frames peak around m = 0.45
+      const maskVis = Math.max(0, 1.0 - Math.abs(m - 0.45) * 2.4);
+      maskFramesGroup.rotation.y = now * 0.00035;
+      maskFrameMats.forEach(mat => mat.opacity = maskVis * 0.45);
+
+      const mPos = morphGeo.attributes.position.array;
+      const mCol = morphGeo.attributes.color.array;
+      const cosR = Math.cos(maskFramesGroup.rotation.y);
+      const sinR = Math.sin(maskFramesGroup.rotation.y);
+
+      for (let i = 0; i < morphCount; i++) {
+        const i3 = i * 3;
+        const fx = posField[i3];
+        const fz = posField[i3 + 2];
+        const fy = getTerrainHeight(fx, fz, timeSec) + posField[i3 + 1] * 0.35;
+
+        // Rotate mask position with carousel
+        const mxRaw = posMasks[i3];
+        const mzRaw = posMasks[i3 + 2];
+        const mx = mxRaw * cosR - mzRaw * sinR;
+        const my = posMasks[i3 + 1];
+        const mz = mxRaw * sinR + mzRaw * cosR;
+
+        if (m < 0.45) {
+          const u = m / 0.45;
+          mPos[i3]     = THREE.MathUtils.lerp(posPerson[i3], mx, u);
+          mPos[i3 + 1] = THREE.MathUtils.lerp(posPerson[i3 + 1], my, u);
+          mPos[i3 + 2] = THREE.MathUtils.lerp(posPerson[i3 + 2], mz, u);
+          tempColor.setHSL(THREE.MathUtils.lerp(0.96, 0.11, u), 0.88, 0.62);
+        } else {
+          const u = (m - 0.45) / 0.55;
+          const swirl = Math.sin(u * Math.PI) * 2.2;
+          const ang = i * 0.015 + timeSec;
+          mPos[i3]     = THREE.MathUtils.lerp(mx, fx, u) + Math.cos(ang) * swirl;
+          mPos[i3 + 1] = THREE.MathUtils.lerp(my, fy, u) + Math.sin(ang) * swirl * 0.4;
+          mPos[i3 + 2] = THREE.MathUtils.lerp(mz, fz, u) + Math.sin(ang) * swirl;
+          tempColor.setHSL(THREE.MathUtils.lerp(0.11, 0.54 + fy * 0.025, u), 0.85, 0.6);
+        }
+        mCol[i3] = tempColor.r; mCol[i3 + 1] = tempColor.g; mCol[i3 + 2] = tempColor.b;
+      }
+      morphGeo.attributes.position.needsUpdate = true;
+      morphGeo.attributes.color.needsUpdate = true;
+      morphMat.opacity = THREE.MathUtils.lerp(0.92, 0.38, Math.max(0, (m - 0.45) / 0.55));
+
+      // ------------------------------------------------------------------------
+      // B. UPDATE BASE LLM ANISOTROPIC TERRAIN SURFACE
+      // ------------------------------------------------------------------------
+      const fieldSurfAlpha = Math.max(0, (m - 0.25) / 0.75);
+      terrainSolidMat.opacity = fieldSurfAlpha * 0.74;
+      terrainWireMat.opacity = fieldSurfAlpha * 0.4;
+
+      const tPos = terrainGeo.attributes.position.array;
+      const tCol = terrainGeo.attributes.color.array;
+
+      for (let i = 0; i < terrainPosAttr.count; i++) {
+        const i3 = i * 3;
+        const x = tPos[i3];
+        const z = tPos[i3 + 2];
+        let h = getTerrainHeight(x, z, timeSec);
+
+        for (let w = 0; w < userWaves.length; w++) {
+          const uw = userWaves[w];
+          const d = Math.hypot(x - uw.wx, z - uw.wz);
+          h += Math.cos(d * 1.6 - uw.age * 8.0) * Math.exp(-d * 0.18) * (1.0 - uw.age) * 2.2;
+        }
+        tPos[i3 + 1] = h;
+
+        if (h > 2.0) {
+          const w = Math.min(1, (h - 2.0) / 4.5);
+          tempColor.setRGB(
+            THREE.MathUtils.lerp(0.15, 0.98, w),
+            THREE.MathUtils.lerp(0.55, 0.28, w),
+            THREE.MathUtils.lerp(0.88, 0.45, w)
+          );
+        } else if (h < -1.6) {
+          const v = Math.min(1, (-h - 1.6) / 4.2);
+          tempColor.setRGB(
+            THREE.MathUtils.lerp(0.08, 0.18, v),
+            THREE.MathUtils.lerp(0.48, 0.88, v),
+            THREE.MathUtils.lerp(0.75, 0.72, v)
+          );
+        } else {
+          const n = Math.max(0, Math.min(1, (h + 1.6) / 3.6));
+          tempColor.setRGB(0.06 + n * 0.12, 0.28 + n * 0.36, 0.55 + n * 0.35);
+        }
+
+        // Topographic Iso-Contour Striping in Pillar 2
+        if (state.p2ShowContours && (state.pretrain > 0.1 || state.rlhf > 0.1)) {
+          const contourBand = Math.abs((h * 1.35) - Math.round(h * 1.35));
+          if (contourBand < 0.075) {
+            tempColor.r += 0.22;
+            tempColor.g += 0.28;
+            tempColor.b += 0.32;
+          }
+        }
+
+        tCol[i3] = tempColor.r; tCol[i3 + 1] = tempColor.g; tCol[i3 + 2] = tempColor.b;
+      }
+      terrainGeo.attributes.position.needsUpdate = true;
+      terrainGeo.attributes.color.needsUpdate = true;
+
+      for (let i = userWaves.length - 1; i >= 0; i--) {
+        const uw = userWaves[i];
+        uw.age += dt * 0.62;
+        if (uw.age >= 1.0) {
+          scene.remove(uw.mesh); uw.mesh.geometry.dispose(); uw.mat.dispose();
+          userWaves.splice(i, 1);
+        } else {
+          const sc = 1.0 + uw.age * 12.5;
+          uw.mesh.scale.set(sc, sc, 1);
+          uw.mat.opacity = (1.0 - uw.age) * 0.9;
+        }
+      }
+
+      // ------------------------------------------------------------------------
+      // C. UPDATE GRAVITY RAINDROP & PERTURBATION PARTICLES
+      // ------------------------------------------------------------------------
+      physMat.opacity = fieldSurfAlpha * 0.88;
+      const pArr = physGeo.attributes.position.array;
+      const cArr = physGeo.attributes.color.array;
+      for (let i = 0; i < physCount; i++) {
+        const p = physParticles[i];
+        p.life += dt * 0.26;
+        if (p.life >= p.maxLife || Math.abs(p.x) > 25 || Math.abs(p.z) > 19) {
+          p.x = (Math.random() - 0.5) * 44;
+          p.z = (Math.random() - 0.5) * 32;
+          p.vx = 0; p.vz = 0; p.life = 0; p.userSpawned = false;
+        }
+        const grad = getTerrainGradient(p.x, p.z, timeSec);
+        p.vx = p.vx * 0.9 + (-grad.dx * 3.4 + (Math.random() - 0.5) * state.temp * 4.5) * dt * 6.0;
+        p.vz = p.vz * 0.9 + (-grad.dz * 3.4 + (Math.random() - 0.5) * state.temp * 4.5) * dt * 6.0;
+        p.x += p.vx * dt * 2.4;
+        p.z += p.vz * dt * 2.4;
+
+        const i3 = i * 3;
+        pArr[i3] = p.x; pArr[i3 + 1] = getTerrainHeight(p.x, p.z, timeSec) + 0.35; pArr[i3 + 2] = p.z;
+        if (p.userSpawned) {
+          cArr[i3] = 0.99; cArr[i3 + 1] = 0.82; cArr[i3 + 2] = 0.25;
+        } else {
+          cArr[i3] = 0.22; cArr[i3 + 1] = 0.88; cArr[i3 + 2] = 0.82;
+        }
+      }
+      physGeo.attributes.position.needsUpdate = true;
+      physGeo.attributes.color.needsUpdate = true;
+
+      // ------------------------------------------------------------------------
+      // D. UPDATE PILLAR 3: SURVEY BEFORE YOU PUSH & PREDICTIONS P1–P3
+      // ------------------------------------------------------------------------
+      const inP3 = state.pillar === 2;
+      if (inP3) {
+        const sonarCycle = (now * 0.00055) % 1.0;
+        if (sonarCycle < cosmicAudio.lastSonarCycle && state.p3Strategy !== 'forceful') {
+          cosmicAudio.playSonarPing();
+        }
+        cosmicAudio.lastSonarCycle = sonarCycle;
+        surveyRing.scale.set(1.0 + sonarCycle * 22.0, 1, 1.0 + sonarCycle * 22.0);
+        surveyRing.position.set(0, 0.4, 0);
+        surveyRing.material.opacity = (1.0 - sonarCycle) * 0.65;
+
+        const gx = -13.5, gz = -4.2;
+        boundaryGate.position.set(gx, getTerrainHeight(gx, gz, timeSec) + 1.6, gz);
+        boundaryGate.rotation.set(0, Math.PI * 0.42, 0);
+        boundaryGate.material.opacity = state.p3Strategy !== 'forceful' ? 0.95 : 0.15;
+
+        contextRings.forEach((rMesh, idx) => {
+          const cx = -9.0 + idx * 5.8;
+          const cz = Math.sin(cx * 0.14) * 4.2;
+          rMesh.position.set(cx, getTerrainHeight(cx, cz, timeSec) + 1.25, cz);
+          rMesh.material.opacity = state.p3Strategy !== 'forceful' ? 0.65 : 0.1;
+        });
+
+        streamMat.opacity = 0.95;
+        const sPos = streamGeo.attributes.position.array;
+        const sCol = streamGeo.attributes.color.array;
+        // Command volume pushes slightly higher up the wall (up to a hard ceiling due to steep wall gravity -> P2 diminishing returns!)
+        const climbLimit = 0.52 + 0.12 * (1 - Math.exp(-state.p3ForceVolume * 0.35));
+
+        for (let i = 0; i < streamCount; i++) {
+          const sp = streamParticles[i];
+          sp.t = (sp.t + dt * sp.speed) % 1.0;
+          const i3 = i * 3;
+          if (sp.isOpposed) {
+            const vis = (state.p3Strategy === 'both' || state.p3Strategy === 'forceful');
+            const prog = sp.t < climbLimit ? (sp.t / climbLimit) : (1.0 - (sp.t - climbLimit) / (1 - climbLimit) * 0.7);
+            const scatter = sp.t > (climbLimit - 0.03) ? Math.sin(i * 13.7 + now * 0.012) * (sp.t - climbLimit + 0.03) * (5.0 + state.p3ForceVolume * 0.5) : 0;
+            const x = THREE.MathUtils.lerp(-5.0, 4.9, prog) + scatter * 0.4;
+            const z = THREE.MathUtils.lerp(1.5, 6.8, prog) + sp.offsetZ + scatter * 0.65;
+            sPos[i3] = x;
+            sPos[i3 + 1] = vis ? getTerrainHeight(x, z, timeSec) + 0.55 + sp.offsetY : -999;
+            sPos[i3 + 2] = z;
+            sCol[i3] = 0.99; sCol[i3 + 1] = 0.32; sCol[i3 + 2] = 0.45;
+          } else {
+            const vis = (state.p3Strategy === 'both' || state.p3Strategy === 'surveyed');
+            const x = THREE.MathUtils.lerp(-15.0, 15.0, sp.t);
+            const divScatter = (state.p3Experiment === 'P3' && state.p3TransferModel === 'divergent') ? Math.sin(i * 7.1 + x * 0.5) * 3.8 : 0;
+            const z = Math.sin(x * 0.14) * 4.2 + sp.offsetZ * (0.35 + state.temp * 0.45) + divScatter;
+            sPos[i3] = x;
+            sPos[i3 + 1] = vis ? getTerrainHeight(x, z, timeSec) + 0.5 + sp.offsetY : -999;
+            sPos[i3 + 2] = z;
+            sCol[i3] = 0.98; sCol[i3 + 1] = 0.82; sCol[i3 + 2] = 0.22;
+          }
+        }
+        streamGeo.attributes.position.needsUpdate = true;
+        streamGeo.attributes.color.needsUpdate = true;
+      } else {
+        surveyRing.material.opacity = 0;
+        boundaryGate.material.opacity = 0;
+        streamMat.opacity = 0;
+        contextRings.forEach(r => r.material.opacity = 0);
+      }
+
+      // ------------------------------------------------------------------------
+      // E. UPDATE PILLAR 4: DUAL-LAYER AGENT ATOP FIELD + HUMAN CO-CONSTRUCTION
+      // ------------------------------------------------------------------------
+      const inP4 = state.pillar === 3;
+      const showUpperAgent = (inP4 && state.p4ArchView !== 'field_only') ? 1.0 : 0.0;
+      const showLatent = (inP4 && state.p4ArchView === 'latent') ? 1.0 : 0.0;
+      const showHumanHelix = (inP4 && state.p4ArchView === 'human_tri') ? 1.0 : 0.0;
+
+      agentGroup.position.y = THREE.MathUtils.lerp(agentGroup.position.y, state.separation, 0.1);
+      agentGroup.rotation.y = now * 0.0003;
+      centralHub.rotation.x = now * 0.0012;
+      centralHub.rotation.z = now * 0.0009;
+
+      // Update Executive Signal Token position on upper control ring
+      const orbAng = agentNodesData[state.p4ActiveNode].angle;
+      execOrb.position.set(Math.cos(orbAng) * 9.6, 0, Math.sin(orbAng) * 9.6);
+      execOrbMat.opacity = showUpperAgent;
+
+      controlRingMat.opacity = showUpperAgent * 0.82;
+      innerLoopMat.opacity = showUpperAgent * 0.65;
+      hubMat.opacity = showUpperAgent * 0.92;
+
+      agentNodes.forEach((an, idx) => {
+        const isCurrent = idx === state.p4ActiveNode;
+        an.coreMat.opacity = showUpperAgent * 0.95;
+        an.haloMat.opacity = showUpperAgent * (isCurrent ? 0.95 : 0.45);
+        an.spokeMat.opacity = showUpperAgent * (isCurrent ? 0.88 : 0.35);
+        an.coreMesh.scale.setScalar(isCurrent ? 1.3 : 1.0);
+        an.group.rotation.y = -now * 0.001;
+
+        const worldPos = new THREE.Vector3();
+        an.group.getWorldPosition(worldPos);
+        const tagKey = `node${idx}`;
+        if (tags[tagKey]) tags[tagKey].obj.position.set(worldPos.x, worldPos.y + 1.65, worldPos.z);
+
+        const vb = verticalBeams[idx];
+        const tx = worldPos.x * 0.78;
+        const tz = worldPos.z * 0.78;
+        const gy = getTerrainHeight(tx, tz, timeSec);
+
+        const topV = worldPos.clone();
+        const botV = new THREE.Vector3(tx, gy, tz);
+        const midV = topV.clone().add(botV).multiplyScalar(0.5);
+        const dist = topV.distanceTo(botV);
+
+        vb.beamMesh.position.copy(midV);
+        vb.beamMesh.scale.set(isCurrent ? 1.5 : 0.85, dist, isCurrent ? 1.5 : 0.85);
+        vb.beamMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), topV.clone().sub(botV).normalize());
+
+        const pulse = 0.5 + 0.5 * Math.sin(now * 0.005 - idx * 1.4);
+        vb.beamMat.opacity = showUpperAgent * (isCurrent ? 0.52 : 0.14 + pulse * 0.12);
+
+        vb.impactRing.position.set(tx, gy + 0.2, tz);
+        const rScale = (isCurrent ? 1.4 : 0.8) + pulse * 0.65;
+        vb.impactRing.scale.set(rScale, rScale, 1);
+        vb.impactMat.opacity = showUpperAgent * (isCurrent ? 0.88 : 0.32);
+
+        vb.currentTop.copy(topV);
+        vb.currentBot.copy(botV);
+
+        const lr = latentAgentRings[idx];
+        lr.mesh.position.set(tx, gy + 1.05, tz);
+        lr.mesh.rotation.x = now * 0.0015;
+        lr.mesh.rotation.y = now * 0.002;
+        lr.mat.opacity = showLatent * 0.88;
+      });
+
+      packetMat.opacity = showUpperAgent * 0.95;
+      if (showUpperAgent > 0.01) {
+        const pkPos = packetGeo.attributes.position.array;
+        const pkCol = packetGeo.attributes.color.array;
+        for (let i = 0; i < packetCount; i++) {
+          const pk = packets[i];
+          const isStep = pk.beamIdx === state.p4ActiveNode;
+          pk.phase = (pk.phase + dt * pk.speed * (isStep ? 1.7 : 0.8)) % 1.0;
+          const vb = verticalBeams[pk.beamIdx];
+          const s = pk.isDownward ? (1.0 - pk.phase) : pk.phase;
+
+          const i3 = i * 3;
+          pkPos[i3]     = THREE.MathUtils.lerp(vb.currentBot.x, vb.currentTop.x, s) + pk.jitter * (1 - s);
+          pkPos[i3 + 1] = THREE.MathUtils.lerp(vb.currentBot.y, vb.currentTop.y, s);
+          pkPos[i3 + 2] = THREE.MathUtils.lerp(vb.currentBot.z, vb.currentTop.z, s) + pk.jitter * (1 - s);
+
+          if (pk.isDownward) {
+            pkCol[i3] = 0.99; pkCol[i3 + 1] = 0.76; pkCol[i3 + 2] = 0.22;
+          } else {
+            pkCol[i3] = 0.22; pkCol[i3 + 1] = 0.94; pkCol[i3 + 2] = 0.84;
+          }
+        }
+        packetGeo.attributes.position.needsUpdate = true;
+        packetGeo.attributes.color.needsUpdate = true;
+      }
+
+      // Human-Field Co-Construction Helix (Sec 8)
+      humanOrbMat.opacity = showHumanHelix * 0.92;
+      helixMat.opacity = showHumanHelix * 0.95;
+      if (showHumanHelix > 0.01) {
+        const hPos = helixGeo.attributes.position.array;
+        const hCol = helixGeo.attributes.color.array;
+        for (let i = 0; i < helixCount; i++) {
+          const strand = i % 2;
+          const u = ((i / helixCount) + now * 0.00018) % 1.0;
+          const x = THREE.MathUtils.lerp(-16.0, 16.0, u);
+          const baseZ = Math.sin(x * 0.14) * 3.8;
+          const baseH = getTerrainHeight(x, baseZ, timeSec);
+          const twist = u * Math.PI * 8.0 - now * 0.004 + strand * Math.PI;
+          const rad = 1.35 * Math.sin(u * Math.PI);
+
+          const i3 = i * 3;
+          hPos[i3]     = x;
+          hPos[i3 + 1] = baseH + 2.5 + Math.cos(twist) * rad;
+          hPos[i3 + 2] = baseZ + Math.sin(twist) * rad;
+
+          if (strand === 0) {
+            hCol[i3] = 0.99; hCol[i3 + 1] = 0.82; hCol[i3 + 2] = 0.32;
+          } else {
+            hCol[i3] = 0.22; hCol[i3 + 1] = 0.82; hCol[i3 + 2] = 0.98;
+          }
+        }
+        helixGeo.attributes.position.needsUpdate = true;
+        helixGeo.attributes.color.needsUpdate = true;
+      }
+
+      // ------------------------------------------------------------------------
+      // F. UPDATE 3D FLOATING TAGS VISIBILITY
+      // ------------------------------------------------------------------------
+      setTagOpacity(tags.p1Person, state.pillar === 0 && m < 0.25 ? 1 : 0);
+      setTagOpacity(tags.p1Masks, state.pillar === 0 && m >= 0.25 && m < 0.75 ? 1 : 0);
+      setTagOpacity(tags.p1Field, state.pillar === 0 && m >= 0.75 ? 1 : 0);
+
+      setTagOpacity(tags.p2Pretrain, state.pillar === 1 && state.pretrain > 0.2 ? 1 : 0);
+      setTagOpacity(tags.p2Valley, state.pillar === 1 && state.rlhf > 0.2 ? 1 : 0);
+      setTagOpacity(tags.p2Wall, state.pillar === 1 && state.p2Stage === 'stageD' ? 1 : 0);
+
+      setTagOpacity(tags.p3Forceful, inP3 && state.p3Strategy !== 'surveyed' ? 1 : 0);
+      setTagOpacity(tags.p3Survey, inP3 && state.p3Strategy !== 'forceful' ? 1 : 0);
+
+      tags.p4Level2.obj.position.y = agentGroup.position.y + 3.6;
+      setTagOpacity(tags.p4Level2, showUpperAgent);
+      setTagOpacity(tags.p4Level1, inP4 ? 1 : 0);
+      setTagOpacity(tags.node0, showUpperAgent);
+      setTagOpacity(tags.node1, showUpperAgent);
+      setTagOpacity(tags.node2, showUpperAgent);
+      setTagOpacity(tags.node3, showUpperAgent);
+      setTagOpacity(tags.humanTag, showHumanHelix);
+
+      composer.render();
+      labelRenderer.render(scene, camera);
+    }
+
+    // Start at Pillar 1 so user can experience all 4 flagship pillars sequentially or click any!
+    selectPillar(0, false);
+    requestAnimationFrame(animate);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+      labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
